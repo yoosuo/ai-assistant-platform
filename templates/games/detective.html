@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block title %}AI推理侦探游戏 - 智能AI工具平台{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-800 via-blue-900 to-gray-900">
+    <!-- 游戏头部 -->
+    <div class="bg-gradient-to-r from-slate-700 to-blue-800 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-blue-100 hover:text-white mr-6">
+                        ← 返回主页
+                    </a>
+                    <h1 class="text-xl font-bold text-blue-100">🔍 AI推理侦探游戏</h1>
+                </div>
+                <div class="text-blue-200 text-sm">
+                    案件ID: {{ session_id[:8] }}...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- 主要游戏区域 -->
+            <div class="lg:col-span-3">
+                <!-- 案件消息区域 -->
+                <div id="messageArea" class="bg-black bg-opacity-50 rounded-lg p-6 h-96 overflow-y-auto mb-6 backdrop-blur-sm border border-blue-600">
+                    {% if recent_messages %}
+                        {% for message in recent_messages %}
+                        <div class="message mb-4 p-3 rounded-lg {% if message.speaker_type == 'user' %}bg-blue-800 bg-opacity-60 ml-8{% elif message.speaker_type == 'system' %}bg-gray-800 bg-opacity-60{% elif message.speaker_type == 'npc' %}bg-purple-800 bg-opacity-60 mr-8{% else %}bg-slate-800 bg-opacity-60{% endif %}">
+                            <div class="flex items-center mb-2">
+                                <span class="font-bold text-blue-100">
+                                    {% if message.speaker_type == 'user' %}🕵️{% elif message.speaker_type == 'system' %}🔍{% elif message.speaker_type == 'npc' %}👤{% else %}🤖{% endif %}
+                                    {{ message.speaker_name }}
+                                </span>
+                                <span class="text-blue-300 text-xs ml-2">{{ message.timestamp }}</span>
+                            </div>
+                            <div class="text-blue-100 whitespace-pre-wrap">{{ message.content }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-blue-300 mt-20">
+                            <div class="text-6xl mb-4">🔍</div>
+                            <p>案件加载中...</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 操作面板 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 嫌疑人审讯 -->
+                    <div class="bg-black bg-opacity-50 rounded-lg p-6 backdrop-blur-sm border border-blue-600">
+                        <h3 class="text-lg font-bold text-blue-100 mb-4">👥 嫌疑人审讯</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-blue-200 mb-2">选择嫌疑人：</label>
+                                <select id="suspectSelect" class="w-full bg-gray-800 text-blue-100 rounded px-3 py-2 border border-blue-600">
+                                    <option value="">选择嫌疑人...</option>
+                                    <option value="李夫人">李夫人</option>
+                                    <option value="张助理">张助理</option>
+                                    <option value="王律师">王律师</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-blue-200 mb-2">您的问题：</label>
+                                <textarea id="questionText" class="w-full bg-gray-800 text-blue-100 rounded px-3 py-2 border border-blue-600" rows="3" placeholder="输入您要问的问题..."></textarea>
+                            </div>
+                            <button onclick="interrogateSuspect()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-3 rounded-lg font-medium transition-all">
+                                🔍 开始审讯
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 证据分析 -->
+                    <div class="bg-black bg-opacity-50 rounded-lg p-6 backdrop-blur-sm border border-blue-600">
+                        <h3 class="text-lg font-bold text-blue-100 mb-4">🔬 证据分析</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-blue-200 mb-2">选择证据：</label>
+                                <select id="evidenceSelect" class="w-full bg-gray-800 text-blue-100 rounded px-3 py-2 border border-blue-600">
+                                    <option value="">选择证据...</option>
+                                    <option value="茶杯">茶杯</option>
+                                    <option value="管家证言">管家证言</option>
+                                    <option value="保险单">保险单</option>
+                                    <option value="手机记录">手机记录</option>
+                                    <option value="财务报表">财务报表</option>
+                                </select>
+                            </div>
+                            <button onclick="analyzeEvidence()" class="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-all">
+                                🧪 分析证据
+                            </button>
+                            <button onclick="showAllEvidence()" class="w-full bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-700 hover:to-slate-700 text-white px-4 py-2 rounded-lg text-sm transition-all">
+                                📋 查看所有证据
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 推理结论 -->
+                <div class="mt-6 bg-black bg-opacity-50 rounded-lg p-6 backdrop-blur-sm border border-blue-600">
+                    <h3 class="text-lg font-bold text-blue-100 mb-4">⚖️ 提交推理结论</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-200 mb-2">指控嫌疑人：</label>
+                            <select id="accusedSelect" class="w-full bg-gray-800 text-blue-100 rounded px-3 py-2 border border-blue-600">
+                                <option value="">选择真凶...</option>
+                                <option value="李夫人">李夫人</option>
+                                <option value="张助理">张助理</option>
+                                <option value="王律师">王律师</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-1">
+                            <button onclick="submitConclusion()" class="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white px-4 py-3 rounded-lg font-bold transition-all">
+                                ⚖️ 提交结论
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-blue-200 mb-2">推理过程：</label>
+                        <textarea id="reasoningText" class="w-full bg-gray-800 text-blue-100 rounded px-3 py-2 border border-blue-600" rows="4" placeholder="详细说明您的推理过程，包括关键证据和逻辑推导..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="space-y-6">
+                <!-- 调查进度 -->
+                <div class="bg-black bg-opacity-50 rounded-lg p-6 backdrop-blur-sm border border-blue-600">
+                    <h3 class="text-lg font-bold text-blue-100 mb-4">📊 调查进度</h3>
+                    <div class="space-y-3 text-blue-200 text-sm">
+                        <div class="flex justify-between">
+                            <span>审讯次数：</span>
+                            <span id="interrogationCount">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>发现线索：</span>
+                            <span id="clueCount">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>案件状态：</span>
+                            <span id="caseStatus">调查中</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-blue-700">
+                        <div class="text-xs text-blue-300 mb-2">调查进度</div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 嫌疑人列表 -->
+                <div class="bg-black bg-opacity-50 rounded-lg p-6 backdrop-blur-sm border border-blue-600">
+                    <h3 class="text-lg font-bold text-blue-100 mb-4">👥 嫌疑人档案</h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-gray-800 bg-opacity-60 rounded border border-blue-700">
+                            <div class="font-medium text-blue-100">李夫人 (45岁)</div>
+                            <div class="text-xs text-blue-300">家庭主妇 | 受害者妻子</div>
+                            <div class="text-xs text-blue-400 mt-1">动机：巨额保险金</div>
+                        </div>
+                        <div class="p-3 bg-gray-800 bg-opacity-60 rounded border border-blue-700">
+                            <div class="font-medium text-blue-100">张助理 (28岁)</div>
+                            <div class="text-xs text-blue-300">私人助理 | 工作伙伴</div>
+                            <div class="text-xs text-blue-400 mt-1">动机：内幕交易被发现</div>
+                        </div>
+                        <div class="p-3 bg-gray-800 bg-opacity-60 rounded border border-blue-700">
+                            <div class="font-medium text-blue-100">王律师 (55岁)</div>
+                            <div class="text-xs text-blue-300">律师 | 法律顾问</div>
+                            <div class="text-xs text-blue-400 mt-1">动机：遗嘱修改纠纷</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快速操作 -->
+                <div class="bg-black bg-opacity-50 rounded-lg p-6 backdrop-blur-sm border border-blue-600">
+                    <h3 class="text-lg font-bold text-blue-100 mb-4">🚀 快速操作</h3>
+                    <div class="space-y-2">
+                        <button onclick="refreshMessages()" class="w-full bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded text-sm transition-all">
+                            🔄 刷新案情
+                        </button>
+                        <button onclick="showCaseFile()" class="w-full bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded text-sm transition-all">
+                            📁 查看案件档案
+                        </button>
+                        <button onclick="restartCase()" class="w-full bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded text-sm transition-all">
+                            🔄 重新开始
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 调查提示 -->
+                <div class="bg-black bg-opacity-50 rounded-lg p-6 backdrop-blur-sm border border-blue-600">
+                    <h3 class="text-lg font-bold text-blue-100 mb-4">💡 调查提示</h3>
+                    <div class="text-blue-200 text-sm space-y-2">
+                        <p>• 询问每个嫌疑人的不在场证明</p>
+                        <p>• 寻找动机和机会的证据</p>
+                        <p>• 注意前后矛盾的供词</p>
+                        <p>• 分析物理证据的重要性</p>
+                        <p>• 推理要有逻辑和证据支撑</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 结果模态框 -->
+<div id="resultModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-gray-900 rounded-lg p-6 max-w-2xl w-full mx-4 border border-blue-600">
+        <h3 id="resultTitle" class="text-lg font-bold text-blue-100 mb-4"></h3>
+        <div id="resultContent" class="text-blue-200 mb-4"></div>
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeResultModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">
+                确定
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let sessionId = '{{ session_id }}';
+let interrogationCount = 0;
+let clueCount = 0;
+
+// 审讯嫌疑人
+function interrogateSuspect() {
+    const suspect = document.getElementById('suspectSelect').value;
+    const question = document.getElementById('questionText').value;
+    
+    if (!suspect || !question.trim()) {
+        alert('请选择嫌疑人并输入问题');
+        return;
+    }
+    
+    fetch('/api/game/detective/interrogate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            session_id: sessionId,
+            suspect_name: suspect,
+            question: question
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('questionText').value = '';
+            interrogationCount = data.interrogation_count || (interrogationCount + 1);
+            updateProgress();
+            refreshMessages();
+        } else {
+            alert('审讯失败：' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('请求失败，请重试');
+    });
+}
+
+// 分析证据
+function analyzeEvidence() {
+    const evidence = document.getElementById('evidenceSelect').value;
+    
+    if (!evidence) {
+        alert('请选择要分析的证据');
+        return;
+    }
+    
+    fetch('/api/game/detective/analyze', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            session_id: sessionId,
+            evidence_name: evidence
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            clueCount = data.discovered_clues || (clueCount + 1);
+            updateProgress();
+            refreshMessages();
+        } else {
+            alert('证据分析失败：' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('请求失败，请重试');
+    });
+}
+
+// 提交推理结论
+function submitConclusion() {
+    const accused = document.getElementById('accusedSelect').value;
+    const reasoning = document.getElementById('reasoningText').value;
+    
+    if (!accused || !reasoning.trim()) {
+        alert('请选择嫌疑人并填写推理过程');
+        return;
+    }
+    
+    if (!confirm('确定要提交最终结论吗？提交后案件将结案。')) {
+        return;
+    }
+    
+    fetch('/api/game/detective/conclude', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            session_id: sessionId,
+            suspect: accused,
+            reasoning: reasoning
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showResult(data);
+            document.getElementById('caseStatus').textContent = '已结案';
+        } else {
+            alert('提交失败：' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('请求失败，请重试');
+    });
+}
+
+// 显示结果
+function showResult(data) {
+    const title = data.correct ? '🎉 破案成功！' : '❌ 推理错误';
+    const content = `
+        <div class="space-y-4">
+            <div class="p-4 rounded ${data.correct ? 'bg-green-800' : 'bg-red-800'} bg-opacity-60">
+                <p><strong>您的指控：</strong>${data.accused}</p>
+                <p><strong>真正凶手：</strong>${data.actual_killer}</p>
+                <p><strong>得分：</strong>${data.score} 分</p>
+            </div>
+            <div class="text-sm">
+                <h4 class="font-bold mb-2">专业评价：</h4>
+                <div class="whitespace-pre-wrap">${data.evaluation}</div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultContent').innerHTML = content;
+    document.getElementById('resultModal').classList.remove('hidden');
+}
+
+// 关闭结果模态框
+function closeResultModal() {
+    document.getElementById('resultModal').classList.add('hidden');
+    refreshMessages();
+}
+
+// 更新进度
+function updateProgress() {
+    document.getElementById('interrogationCount').textContent = interrogationCount;
+    document.getElementById('clueCount').textContent = clueCount;
+    
+    // 计算进度（最多10次审讯 + 5个线索）
+    const maxProgress = 15;
+    const currentProgress = Math.min(interrogationCount + clueCount, maxProgress);
+    const progressPercent = (currentProgress / maxProgress) * 100;
+    
+    document.getElementById('progressBar').style.width = progressPercent + '%';
+}
+
+// 显示所有证据
+function showAllEvidence() {
+    fetch(`/api/game/detective/evidence?session_id=${sessionId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayEvidenceList(data.evidence_list);
+            } else {
+                alert('获取证据列表失败: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('获取证据列表错误:', error);
+            alert('获取证据列表失败');
+        });
+}
+
+// 显示证据列表模态框
+function displayEvidenceList(evidenceList) {
+    let evidenceHtml = '<div class="space-y-4">';
+    
+    if (evidenceList && evidenceList.length > 0) {
+        evidenceList.forEach((evidence, index) => {
+            const statusIcon = evidence.discovered ? '🔍' : '❓';
+            const statusText = evidence.discovered ? '已发现' : '未发现';
+            const analysisStatus = evidence.analyzed ? '已分析' : '待分析';
+            
+            evidenceHtml += `
+                <div class="bg-gray-800 p-4 rounded border ${evidence.discovered ? 'border-blue-500' : 'border-gray-600'}">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="text-blue-300 font-semibold">${statusIcon} ${evidence.name}</h4>
+                        <span class="text-xs px-2 py-1 rounded ${evidence.discovered ? 'bg-blue-600' : 'bg-gray-600'}">${statusText}</span>
+                    </div>
+                    <p class="text-gray-300 text-sm mb-2">类型: ${evidence.type}</p>
+                    <p class="text-gray-400 text-sm mb-3">${evidence.description}</p>
+                    ${evidence.discovered ? `
+                        <div class="flex space-x-2">
+                            <button onclick="analyzeEvidence('${evidence.name}')" 
+                                    class="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded">
+                                ${analysisStatus}
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        });
+    } else {
+        evidenceHtml += '<p class="text-gray-400">暂无证据信息</p>';
+    }
+    
+    evidenceHtml += '</div>';
+    
+    // 显示在结果模态框中
+    document.getElementById('resultTitle').textContent = '📋 证据列表';
+    document.getElementById('resultContent').innerHTML = evidenceHtml;
+    document.getElementById('resultModal').classList.remove('hidden');
+}
+
+// 显示案件档案
+function showCaseFile() {
+    alert('案件档案功能开发中...');
+}
+
+// 刷新消息
+function refreshMessages() {
+    location.reload();
+}
+
+// 重新开始案件
+function restartCase() {
+    if (confirm('确定要重新开始新的案件吗？当前进度将丢失。')) {
+        window.location.href = '/game/detective';
+    }
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 滚动到消息底部
+    const messageArea = document.getElementById('messageArea');
+    if (messageArea) {
+        messageArea.scrollTop = messageArea.scrollHeight;
+    }
+    
+    // 初始化进度
+    updateProgress();
+});
+</script>
+{% endblock %}

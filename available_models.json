@@ -1,0 +1,774 @@
+[
+  {
+    "id": "google/gemini-2.5-flash-lite",
+    "name": "Google: Gemini 2.5 Flash Lite",
+    "context_length": 1048576,
+    "pricing": {
+      "prompt": "0.0000001",
+      "completion": "0.0000004",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.000000025",
+      "input_cache_write": "0.0000001833"
+    }
+  },
+  {
+    "id": "google/gemini-2.5-flash-lite-preview-06-17",
+    "name": "Google: Gemini 2.5 Flash Lite Preview 06-17",
+    "context_length": 1048576,
+    "pricing": {
+      "prompt": "0.0000001",
+      "completion": "0.0000004",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.000000025",
+      "input_cache_write": "0.0000001833"
+    }
+  },
+  {
+    "id": "google/gemini-2.5-flash",
+    "name": "Google: Gemini 2.5 Flash",
+    "context_length": 1048576,
+    "pricing": {
+      "prompt": "0.0000003",
+      "completion": "0.0000025",
+      "request": "0",
+      "image": "0.001238",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.000000075",
+      "input_cache_write": "0.0000003833"
+    }
+  },
+  {
+    "id": "google/gemini-2.5-pro",
+    "name": "Google: Gemini 2.5 Pro",
+    "context_length": 1048576,
+    "pricing": {
+      "prompt": "0.00000125",
+      "completion": "0.00001",
+      "request": "0",
+      "image": "0.00516",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000031",
+      "input_cache_write": "0.000001625"
+    }
+  },
+  {
+    "id": "google/gemini-2.5-pro-preview",
+    "name": "Google: Gemini 2.5 Pro Preview 06-05",
+    "context_length": 1048576,
+    "pricing": {
+      "prompt": "0.00000125",
+      "completion": "0.00001",
+      "request": "0",
+      "image": "0.00516",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000031",
+      "input_cache_write": "0.000001625"
+    }
+  },
+  {
+    "id": "anthropic/claude-opus-4",
+    "name": "Anthropic: Claude Opus 4",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.000015",
+      "completion": "0.000075",
+      "request": "0",
+      "image": "0.024",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000015",
+      "input_cache_write": "0.00001875"
+    }
+  },
+  {
+    "id": "anthropic/claude-sonnet-4",
+    "name": "Anthropic: Claude Sonnet 4",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.000003",
+      "completion": "0.000015",
+      "request": "0",
+      "image": "0.0048",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000003",
+      "input_cache_write": "0.00000375"
+    }
+  },
+  {
+    "id": "google/gemini-2.5-pro-preview-05-06",
+    "name": "Google: Gemini 2.5 Pro Preview 05-06",
+    "context_length": 1048576,
+    "pricing": {
+      "prompt": "0.00000125",
+      "completion": "0.00001",
+      "request": "0",
+      "image": "0.00516",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000031",
+      "input_cache_write": "0.000001625"
+    }
+  },
+  {
+    "id": "openai/gpt-4.1",
+    "name": "OpenAI: GPT-4.1",
+    "context_length": 1047576,
+    "pricing": {
+      "prompt": "0.000002",
+      "completion": "0.000008",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000005"
+    }
+  },
+  {
+    "id": "openai/gpt-4.1-mini",
+    "name": "OpenAI: GPT-4.1 Mini",
+    "context_length": 1047576,
+    "pricing": {
+      "prompt": "0.0000004",
+      "completion": "0.0000016",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000001"
+    }
+  },
+  {
+    "id": "openai/gpt-4.1-nano",
+    "name": "OpenAI: GPT-4.1 Nano",
+    "context_length": 1047576,
+    "pricing": {
+      "prompt": "0.0000001",
+      "completion": "0.0000004",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.000000025"
+    }
+  },
+  {
+    "id": "google/gemini-2.5-pro-exp-03-25",
+    "name": "Google: Gemini 2.5 Pro Experimental",
+    "context_length": 1048576,
+    "pricing": {
+      "prompt": "0",
+      "completion": "0",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-4o-mini-search-preview",
+    "name": "OpenAI: GPT-4o-mini Search Preview",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.00000015",
+      "completion": "0.0000006",
+      "request": "0.0275",
+      "image": "0.000217",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-4o-search-preview",
+    "name": "OpenAI: GPT-4o Search Preview",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.0000025",
+      "completion": "0.00001",
+      "request": "0.035",
+      "image": "0.003613",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "google/gemini-2.0-flash-lite-001",
+    "name": "Google: Gemini 2.0 Flash Lite",
+    "context_length": 1048576,
+    "pricing": {
+      "prompt": "0.000000075",
+      "completion": "0.0000003",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "anthropic/claude-3.7-sonnet",
+    "name": "Anthropic: Claude 3.7 Sonnet",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.000003",
+      "completion": "0.000015",
+      "request": "0",
+      "image": "0.0048",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000003",
+      "input_cache_write": "0.00000375"
+    }
+  },
+  {
+    "id": "anthropic/claude-3.7-sonnet:thinking",
+    "name": "Anthropic: Claude 3.7 Sonnet (thinking)",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.000003",
+      "completion": "0.000015",
+      "request": "0",
+      "image": "0.0048",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000003",
+      "input_cache_write": "0.00000375"
+    }
+  },
+  {
+    "id": "anthropic/claude-3.7-sonnet:beta",
+    "name": "Anthropic: Claude 3.7 Sonnet (self-moderated)",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.000003",
+      "completion": "0.000015",
+      "request": "0",
+      "image": "0.0048",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000003",
+      "input_cache_write": "0.00000375"
+    }
+  },
+  {
+    "id": "google/gemini-2.0-flash-001",
+    "name": "Google: Gemini 2.0 Flash",
+    "context_length": 1048576,
+    "pricing": {
+      "prompt": "0.0000001",
+      "completion": "0.0000004",
+      "request": "0",
+      "image": "0.0000258",
+      "audio": "0.0000007",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.000000025",
+      "input_cache_write": "0.0000001833"
+    }
+  },
+  {
+    "id": "google/gemini-2.0-flash-exp:free",
+    "name": "Google: Gemini 2.0 Flash Experimental (free)",
+    "context_length": 1048576,
+    "pricing": {
+      "prompt": "0",
+      "completion": "0",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-4o-2024-11-20",
+    "name": "OpenAI: GPT-4o (2024-11-20)",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.0000025",
+      "completion": "0.00001",
+      "request": "0",
+      "image": "0.003613",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000125"
+    }
+  },
+  {
+    "id": "anthropic/claude-3.5-haiku:beta",
+    "name": "Anthropic: Claude 3.5 Haiku (self-moderated)",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.0000008",
+      "completion": "0.000004",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000008",
+      "input_cache_write": "0.000001"
+    }
+  },
+  {
+    "id": "anthropic/claude-3.5-haiku",
+    "name": "Anthropic: Claude 3.5 Haiku",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.0000008",
+      "completion": "0.000004",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000008",
+      "input_cache_write": "0.000001"
+    }
+  },
+  {
+    "id": "anthropic/claude-3.5-haiku-20241022",
+    "name": "Anthropic: Claude 3.5 Haiku (2024-10-22)",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.0000008",
+      "completion": "0.000004",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000008",
+      "input_cache_write": "0.000001"
+    }
+  },
+  {
+    "id": "anthropic/claude-3.5-sonnet:beta",
+    "name": "Anthropic: Claude 3.5 Sonnet (self-moderated)",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.000003",
+      "completion": "0.000015",
+      "request": "0",
+      "image": "0.0048",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000003",
+      "input_cache_write": "0.00000375"
+    }
+  },
+  {
+    "id": "anthropic/claude-3.5-sonnet",
+    "name": "Anthropic: Claude 3.5 Sonnet",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.000003",
+      "completion": "0.000015",
+      "request": "0",
+      "image": "0.0048",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000003",
+      "input_cache_write": "0.00000375"
+    }
+  },
+  {
+    "id": "google/gemini-flash-1.5-8b",
+    "name": "Google: Gemini 1.5 Flash 8B",
+    "context_length": 1000000,
+    "pricing": {
+      "prompt": "0.0000000375",
+      "completion": "0.00000015",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000001",
+      "input_cache_write": "0.0000000583"
+    }
+  },
+  {
+    "id": "openai/chatgpt-4o-latest",
+    "name": "OpenAI: ChatGPT-4o",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.000005",
+      "completion": "0.000015",
+      "request": "0",
+      "image": "0.007225",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-4o-2024-08-06",
+    "name": "OpenAI: GPT-4o (2024-08-06)",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.0000025",
+      "completion": "0.00001",
+      "request": "0",
+      "image": "0.003613",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000125"
+    }
+  },
+  {
+    "id": "openai/gpt-4o-mini",
+    "name": "OpenAI: GPT-4o-mini",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.00000015",
+      "completion": "0.0000006",
+      "request": "0",
+      "image": "0.000217",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.000000075"
+    }
+  },
+  {
+    "id": "openai/gpt-4o-mini-2024-07-18",
+    "name": "OpenAI: GPT-4o-mini (2024-07-18)",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.00000015",
+      "completion": "0.0000006",
+      "request": "0",
+      "image": "0.007225",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.000000075"
+    }
+  },
+  {
+    "id": "anthropic/claude-3.5-sonnet-20240620:beta",
+    "name": "Anthropic: Claude 3.5 Sonnet (2024-06-20) (self-moderated)",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.000003",
+      "completion": "0.000015",
+      "request": "0",
+      "image": "0.0048",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000003",
+      "input_cache_write": "0.00000375"
+    }
+  },
+  {
+    "id": "anthropic/claude-3.5-sonnet-20240620",
+    "name": "Anthropic: Claude 3.5 Sonnet (2024-06-20)",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.000003",
+      "completion": "0.000015",
+      "request": "0",
+      "image": "0.0048",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000003",
+      "input_cache_write": "0.00000375"
+    }
+  },
+  {
+    "id": "google/gemini-flash-1.5",
+    "name": "Google: Gemini 1.5 Flash ",
+    "context_length": 1000000,
+    "pricing": {
+      "prompt": "0.000000075",
+      "completion": "0.0000003",
+      "request": "0",
+      "image": "0.00004",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000001875",
+      "input_cache_write": "0.0000001583"
+    }
+  },
+  {
+    "id": "openai/gpt-4o",
+    "name": "OpenAI: GPT-4o",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.0000025",
+      "completion": "0.00001",
+      "request": "0",
+      "image": "0.003613",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000125"
+    }
+  },
+  {
+    "id": "openai/gpt-4o:extended",
+    "name": "OpenAI: GPT-4o (extended)",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.000006",
+      "completion": "0.000018",
+      "request": "0",
+      "image": "0.007225",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-4o-2024-05-13",
+    "name": "OpenAI: GPT-4o (2024-05-13)",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.000005",
+      "completion": "0.000015",
+      "request": "0",
+      "image": "0.007225",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "google/gemini-pro-1.5",
+    "name": "Google: Gemini 1.5 Pro",
+    "context_length": 2000000,
+    "pricing": {
+      "prompt": "0.00000125",
+      "completion": "0.000005",
+      "request": "0",
+      "image": "0.0006575",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-4-turbo",
+    "name": "OpenAI: GPT-4 Turbo",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.00001",
+      "completion": "0.00003",
+      "request": "0",
+      "image": "0.01445",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "anthropic/claude-3-haiku:beta",
+    "name": "Anthropic: Claude 3 Haiku (self-moderated)",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.00000025",
+      "completion": "0.00000125",
+      "request": "0",
+      "image": "0.0004",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000003",
+      "input_cache_write": "0.0000003"
+    }
+  },
+  {
+    "id": "anthropic/claude-3-haiku",
+    "name": "Anthropic: Claude 3 Haiku",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.00000025",
+      "completion": "0.00000125",
+      "request": "0",
+      "image": "0.0004",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.00000003",
+      "input_cache_write": "0.0000003"
+    }
+  },
+  {
+    "id": "anthropic/claude-3-opus:beta",
+    "name": "Anthropic: Claude 3 Opus (self-moderated)",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.000015",
+      "completion": "0.000075",
+      "request": "0",
+      "image": "0.024",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000015",
+      "input_cache_write": "0.00001875"
+    }
+  },
+  {
+    "id": "anthropic/claude-3-opus",
+    "name": "Anthropic: Claude 3 Opus",
+    "context_length": 200000,
+    "pricing": {
+      "prompt": "0.000015",
+      "completion": "0.000075",
+      "request": "0",
+      "image": "0.024",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0",
+      "input_cache_read": "0.0000015",
+      "input_cache_write": "0.00001875"
+    }
+  },
+  {
+    "id": "openai/gpt-3.5-turbo-0613",
+    "name": "OpenAI: GPT-3.5 Turbo (older v0613)",
+    "context_length": 4095,
+    "pricing": {
+      "prompt": "0.000001",
+      "completion": "0.000002",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-4-turbo-preview",
+    "name": "OpenAI: GPT-4 Turbo Preview",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.00001",
+      "completion": "0.00003",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-4-1106-preview",
+    "name": "OpenAI: GPT-4 Turbo (older v1106)",
+    "context_length": 128000,
+    "pricing": {
+      "prompt": "0.00001",
+      "completion": "0.00003",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-3.5-turbo-instruct",
+    "name": "OpenAI: GPT-3.5 Turbo Instruct",
+    "context_length": 4095,
+    "pricing": {
+      "prompt": "0.0000015",
+      "completion": "0.000002",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-3.5-turbo-16k",
+    "name": "OpenAI: GPT-3.5 Turbo 16k",
+    "context_length": 16385,
+    "pricing": {
+      "prompt": "0.000003",
+      "completion": "0.000004",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-3.5-turbo",
+    "name": "OpenAI: GPT-3.5 Turbo",
+    "context_length": 16385,
+    "pricing": {
+      "prompt": "0.0000005",
+      "completion": "0.0000015",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-4",
+    "name": "OpenAI: GPT-4",
+    "context_length": 8191,
+    "pricing": {
+      "prompt": "0.00003",
+      "completion": "0.00006",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  },
+  {
+    "id": "openai/gpt-4-0314",
+    "name": "OpenAI: GPT-4 (older v0314)",
+    "context_length": 8191,
+    "pricing": {
+      "prompt": "0.00003",
+      "completion": "0.00006",
+      "request": "0",
+      "image": "0",
+      "audio": "0",
+      "web_search": "0",
+      "internal_reasoning": "0"
+    }
+  }
+]

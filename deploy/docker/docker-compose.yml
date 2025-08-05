@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # AI助手平台应用
+  aiplatform:
+    build: 
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    container_name: ai_assistant_platform
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=production
+      - DEBUG=False
+      - HOST=0.0.0.0
+      - PORT=5000
+      - DATABASE_PATH=/app/data/conversations.db
+      - SECRET_KEY=${SECRET_KEY:-ai-assistant-platform-secret-key-2024}
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+      - ./logs:/app/logs
+    networks:
+      - aiplatform-network
+    depends_on:
+      - nginx
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.aiplatform.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.aiplatform.tls=true"
+      - "traefik.http.routers.aiplatform.tls.certresolver=letsencrypt"
+
+  # Nginx反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: ai_platform_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ../../static:/var/www/static:ro
+    networks:
+      - aiplatform-network
+    depends_on:
+      - aiplatform
+
+  # Traefik代理（可选，用于自动SSL）
+  traefik:
+    image: traefik:v2.10
+    container_name: ai_platform_traefik
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - aiplatform-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+
+networks:
+  aiplatform-network:
+    driver: bridge
+
+volumes:
+  aiplatform-data:
+  aiplatform-config:
+  aiplatform-logs:

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}智能AI工具平台{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 自定义样式 -->
+    <style>
+        /* 使用系统字体，避免外部字体加载问题 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        /* 备用字体方案 */
+        :root {
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            font-family: var(--font-family);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .typing-effect {
+            border-right: 2px solid #667eea;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { border-color: transparent; }
+            51%, 100% { border-color: #667eea; }
+        }
+        
+        .chat-message {
+            animation: fadeInUp 0.3s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .loading-dots {
+            display: inline-block;
+        }
+        
+        .loading-dots::after {
+            content: '';
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+            100% { content: ''; }
+        }
+        
+        .assistant-icon {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .security-warning {
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            color: white;
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, #48cae4 0%, #0077b6 100%);
+            color: white;
+        }
+    </style>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <div class="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-lg">AI</span>
+                        </div>
+                        <span class="text-xl font-semibold text-gray-900">智能AI工具平台</span>
+                    </a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        首页
+                    </a>
+                    <a href="/config" class="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        配置
+                    </a>
+                    <a href="/user-center" class="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors cursor-pointer" title="用户中心">
+                        <span class="text-gray-600 text-sm font-medium">用</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- 主要内容 -->
+    <main class="flex-1">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- 页脚 -->
+    <footer class="bg-white border-t mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-gray-600 text-sm">
+                <p>© 2024 智能AI工具平台. 由 AI 驱动的智能助手平台</p>
+                <p class="mt-1">支持阿里云百炼 & OpenRouter 双平台</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- 美化的Toast通知容器 -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-3 max-w-sm w-full"></div>
+    
+    <!-- 加载遮罩 -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 hidden">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm mx-4">
+                <div class="text-center">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mb-4">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">处理中...</h3>
+                    <p class="text-sm text-gray-500">请稍候，正在为您处理请求</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 基础JavaScript -->
+    <script>
+        // 美化的Toast通知系统
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toast-container');
+            const toastId = 'toast-' + Date.now();
+            
+            // 创建toast元素
+            const toast = document.createElement('div');
+            toast.id = toastId;
+            toast.className = 'transform transition-all duration-300 ease-out translate-x-full opacity-0';
+            
+            // 根据类型设置样式和图标
+            const toastConfig = {
+                success: {
+                    bg: 'bg-emerald-50 border-emerald-200',
+                    icon: '✅',
+                    iconBg: 'bg-emerald-500',
+                    textColor: 'text-emerald-800',
+                    titleColor: 'text-emerald-900'
+                },
+                error: {
+                    bg: 'bg-red-50 border-red-200',
+                    icon: '❌',
+                    iconBg: 'bg-red-500',
+                    textColor: 'text-red-800',
+                    titleColor: 'text-red-900'
+                },
+                warning: {
+                    bg: 'bg-amber-50 border-amber-200',
+                    icon: '⚠️',
+                    iconBg: 'bg-amber-500',
+                    textColor: 'text-amber-800',
+                    titleColor: 'text-amber-900'
+                },
+                info: {
+                    bg: 'bg-blue-50 border-blue-200',
+                    icon: 'ℹ️',
+                    iconBg: 'bg-blue-500',
+                    textColor: 'text-blue-800',
+                    titleColor: 'text-blue-900'
+                }
+            };
+            
+            const config = toastConfig[type] || toastConfig.info;
+            
+            toast.innerHTML = `
+                <div class="border ${config.bg} rounded-xl shadow-lg p-4 backdrop-blur-sm">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <div class="${config.iconBg} rounded-full p-1 shadow-sm">
+                                <span class="text-sm">${config.icon}</span>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium ${config.titleColor} leading-5">${message}</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <button onclick="removeToast('${toastId}')" 
+                                    class="${config.textColor} hover:opacity-75 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            
+            // 动画显示
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full', 'opacity-0');
+                toast.classList.add('translate-x-0', 'opacity-100');
+            }, 100);
+            
+            // 自动隐藏
+            setTimeout(() => {
+                removeToast(toastId);
+            }, duration);
+        }
+        
+        function removeToast(toastId) {
+            const toast = document.getElementById(toastId);
+            if (toast) {
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }
+        }
+        
+        // 显示加载遮罩
+        function showLoading(message = '处理中...') {
+            const overlay = document.getElementById('loading-overlay');
+            const messageEl = overlay.querySelector('p');
+            if (messageEl) {
+                messageEl.textContent = message;
+            }
+            overlay.classList.remove('hidden');
+        }
+        
+        // 隐藏加载遮罩
+        function hideLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.classList.add('hidden');
+        }
+        
+        // API 请求封装
+        async function apiRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    showToast(data.error || '请求失败', 'error');
+                    return null;
+                }
+                
+                return data;
+            } catch (error) {
+                showToast('网络请求失败: ' + error.message, 'error');
+                return null;
+            }
+        }
+        
+        // 复制文本到剪贴板
+        async function copyToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('已复制到剪贴板', 'success');
+            } catch (error) {
+                showToast('复制失败', 'error');
+            }
+        }
+        
+        // 格式化时间
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) { // 1分钟内
+                return '刚刚';
+            } else if (diff < 3600000) { // 1小时内
+                return Math.floor(diff / 60000) + ' 分钟前';
+            } else if (diff < 86400000) { // 1天内
+                return Math.floor(diff / 3600000) + ' 小时前';
+            } else {
+                return date.toLocaleDateString('zh-CN');
+            }
+        }
+        
+        // 防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加页面加载动画
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.3s ease';
+            
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

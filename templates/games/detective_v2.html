@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}AI推理侦探游戏V2{% endblock %}
+{% block extra_css %}
+<style>
+.detective-container { min-height: 90vh; display: flex; flex-direction: column; background: linear-gradient(135deg, #e0e7ff 0%, #f0abfc 100%); }
+.detective-header { padding: 32px 0 16px 0; text-align: center; }
+.detective-header h2 { font-size: 2.2rem; font-weight: 700; color: #4f46e5; }
+.detective-main { flex: 1; display: flex; gap: 32px; max-width: 1200px; margin: 0 auto; }
+.detective-info { width: 340px; background: #fff; border-radius: 18px; box-shadow: 0 4px 24px #c7d2fe33; padding: 24px; margin-top: 12px; }
+.detective-messages { flex: 1; background: #fff; border-radius: 18px; box-shadow: 0 4px 24px #c7d2fe33; padding: 24px; margin-top: 12px; display: flex; flex-direction: column; }
+.detective-msg-list { flex: 1; overflow-y: auto; margin-bottom: 16px; }
+.detective-msg { margin-bottom: 18px; }
+.detective-msg .role { font-weight: 600; color: #6366f1; margin-right: 8px; }
+.detective-msg .content { display: inline; }
+.detective-actions { display: flex; gap: 12px; margin-top: 8px; }
+.detective-actions input, .detective-actions select { border: 1px solid #c7d2fe; border-radius: 8px; padding: 6px 12px; }
+.detective-actions button { background: linear-gradient(90deg, #6366f1, #a21caf); color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.detective-actions button:hover { background: linear-gradient(90deg, #a21caf, #6366f1); }
+.detective-notebook { margin-top: 24px; background: #f3f4f6; border-radius: 12px; padding: 16px; font-size: 14px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="detective-container">
+  <div class="detective-header">
+    <h2>🕵️‍♂️ AI推理侦探游戏 V2</h2>
+    <div style="color:#6b7280; font-size:16px;">案件类型：{{ game_state.case_type or '未生成' }} | 阶段：{{ game_state.phase or '准备中' }}</div>
+  </div>
+  <div class="detective-main">
+    <div class="detective-info">
+      <h3>案件信息</h3>
+      <div><b>案件概述：</b>{{ game_state.case_data.case_overview or '请先生成案件' }}</div>
+      <div style="margin-top:10px;"><b>受害者：</b>{{ game_state.case_data.victim.name if game_state.case_data.victim else '' }}</div>
+      <div><b>案发现场：</b>{{ game_state.case_data.crime_scene_description or '' }}</div>
+      <div style="margin-top:10px;"><b>嫌疑人：</b></div>
+      <ul>
+        {% for s in game_state.case_data.suspects or [] %}
+        <li>{{ s.name }} - {{ s.role }} - {{ s.basic_info }}</li>
+        {% endfor %}
+      </ul>
+      <div style="margin-top:10px;"><b>关键证据：</b></div>
+      <ul>
+        {% for e in game_state.case_data.key_evidence or [] %}
+        <li>{{ e.name }} - {{ e.description }}</li>
+        {% endfor %}
+      </ul>
+      <div class="detective-notebook" id="notebookBox">
+        <b>推理笔记：</b>
+        <div id="notebookContent">（点击下方按钮可实时获取最新笔记）</div>
+      </div>
+      <button onclick="getHint()" style="margin-top:12px;">💡 获取提示</button>
+    </div>
+    <div class="detective-messages">
+      <div class="detective-msg-list" id="msgList">
+        {% for msg in messages %}
+        <div class="detective-msg"><span class="role">{{ msg.role }}</span><span class="content">{{ msg.content }}</span></div>
+        {% endfor %}
+      </div>
+      <div class="detective-actions">
+        <select id="actionType" onchange="switchAction()">
+          <option value="investigate">调查现场</option>
+          <option value="interrogate">审讯嫌疑人</option>
+          <option value="analyze">分析证据</option>
+          <option value="conclude">提交结论</option>
+          <option value="notebook">推理笔记</option>
+        </select>
+        <input id="input1" placeholder="输入调查目标/嫌疑人/证据/结论..." style="width:180px;" />
+        <input id="input2" placeholder="如提问内容/推理过程..." style="width:180px; display:none;" />
+        <button onclick="doAction()">执行</button>
+        <button onclick="refreshNotebook()">📒 刷新笔记</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+const sessionId = '{{ session_id }}';
+function switchAction() {
+  const type = document.getElementById('actionType').value;
+  document.getElementById('input1').placeholder = type==='investigate'?'输入调查目标':type==='interrogate'?'输入嫌疑人姓名':type==='analyze'?'输入证据名称':type==='conclude'?'输入嫌疑人姓名':'输入内容';
+  document.getElementById('input2').style.display = (type==='interrogate'||type==='conclude')?'inline-block':'none';
+  document.getElementById('input2').placeholder = type==='interrogate'?'输入提问内容':'输入推理过程';
+}
+function doAction() {
+  const type = document.getElementById('actionType').value;
+  const v1 = document.getElementById('input1').value.trim();
+  const v2 = document.getElementById('input2').value.trim();
+  if(type==='investigate') return fetch('/api/game/detective-v2/start', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId,case_type:v1||'murder'})}).then(r=>r.json()).then(showResult);
+  if(type==='interrogate') return fetch('/api/game/detective-v2/interrogate', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId,suspect_name:v1,question:v2})}).then(r=>r.json()).then(showResult);
+  if(type==='analyze') return fetch('/api/game/detective-v2/analyze', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId,evidence_name:v1})}).then(r=>r.json()).then(showResult);
+  if(type==='conclude') return fetch('/api/game/detective-v2/conclude', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId,suspect:v1,reasoning:v2})}).then(r=>r.json()).then(showResult);
+  if(type==='notebook') return refreshNotebook();
+}
+function showResult(res) {
+  if(res.success) location.reload();
+  else alert(res.error||'操作失败');
+}
+function refreshNotebook() {
+  fetch(`/api/game/detective-v2/notebook?session_id=${sessionId}`).then(r=>r.json()).then(res=>{
+    if(res.success) document.getElementById('notebookContent').innerText = JSON.stringify(res.notebook,null,2);
+    else alert(res.error||'获取笔记失败');
+  });
+}
+function getHint() {
+  fetch(`/api/game/detective-v2/hint?session_id=${sessionId}`).then(r=>r.json()).then(res=>{
+    if(res.success) alert('提示：'+res.hint);
+    else alert(res.error||'获取提示失败');
+  });
+}
+switchAction();
+</script>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}服务器错误 - 智能AI工具平台{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 flex items-center justify-center">
+    <div class="max-w-md w-full mx-auto text-center">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <!-- 500 图标 -->
+            <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-red-400 to-orange-500 rounded-full flex items-center justify-center">
+                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.232 18.5c-.77.833.192 2.5 1.732 2.5z"/>
+                </svg>
+            </div>
+            
+            <!-- 错误信息 -->
+            <h1 class="text-6xl font-bold text-gray-800 mb-4">500</h1>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">服务器内部错误</h2>
+            <p class="text-gray-600 mb-8">服务器遇到了一个错误，无法完成您的请求。我们正在努力修复这个问题。</p>
+            
+            <!-- 操作按钮 -->
+            <div class="space-y-4">
+                <button onclick="location.reload()" class="block w-full bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105">
+                    重新加载
+                </button>
+                
+                <a href="/" class="block w-full border-2 border-gray-300 hover:border-gray-400 text-gray-700 font-medium py-3 px-6 rounded-lg transition-colors duration-200">
+                    返回首页
+                </a>
+            </div>
+            
+            <!-- 故障排除建议 -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <p class="text-sm text-gray-500 mb-4">可能的解决方案：</p>
+                <div class="space-y-2 text-sm text-gray-600 text-left">
+                    <div class="flex items-start space-x-2">
+                        <span class="text-orange-500 mt-1">•</span>
+                        <span>检查API配置是否正确</span>
+                    </div>
+                    <div class="flex items-start space-x-2">
+                        <span class="text-orange-500 mt-1">•</span>
+                        <span>确认网络连接正常</span>
+                    </div>
+                    <div class="flex items-start space-x-2">
+                        <span class="text-orange-500 mt-1">•</span>
+                        <span>稍后再试</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 配置链接 -->
+            <div class="mt-6">
+                <a href="/config" class="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-800 text-sm transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>检查系统配置</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- 装饰元素 -->
+        <div class="mt-8 text-center">
+            <div class="inline-flex items-center space-x-2 text-gray-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-sm">错误页面: {{ request.url }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

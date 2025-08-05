@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}AI剧本杀主持人 - 智能AI工具平台{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-red-900 via-orange-900 to-yellow-900">
+    <!-- 游戏头部 -->
+    <div class="bg-gradient-to-r from-red-800 to-orange-700 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-amber-100 hover:text-white mr-6">
+                        ← 返回主页
+                    </a>
+                    <h1 class="text-xl font-bold text-amber-100">🎭 AI剧本杀主持人</h1>
+                </div>
+                <div class="text-amber-200 text-sm">
+                    游戏ID: {{ session_id[:8] }}...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 主要游戏区域 -->
+            <div class="lg:col-span-2">
+                <!-- 游戏消息区域 -->
+                <div id="messageArea" class="bg-black bg-opacity-40 rounded-lg p-6 h-96 overflow-y-auto mb-6 backdrop-blur-sm border border-amber-600">
+                    {% if recent_messages %}
+                        {% for message in recent_messages %}
+                        <div class="message mb-4 p-3 rounded-lg {% if message.speaker_type == 'host' %}bg-red-800 bg-opacity-60{% elif message.speaker_type == 'user' %}bg-blue-800 bg-opacity-60{% elif message.speaker_type == 'npc' %}bg-purple-800 bg-opacity-60{% else %}bg-gray-800 bg-opacity-60{% endif %}">
+                            <div class="flex items-center mb-2">
+                                <span class="font-bold text-amber-100">
+                                    {% if message.speaker_type == 'host' %}🎭{% elif message.speaker_type == 'user' %}🕵️{% elif message.speaker_type == 'npc' %}👤{% else %}🤖{% endif %}
+                                    {{ message.speaker_name }}
+                                </span>
+                                <span class="text-amber-300 text-xs ml-2">{{ message.timestamp }}</span>
+                            </div>
+                            <div class="text-amber-100 whitespace-pre-wrap">{{ message.content }}</div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-amber-300 mt-20">
+                            <div class="text-6xl mb-4">🎭</div>
+                            <p>游戏加载中...</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 用户操作区域 -->
+                <div class="bg-black bg-opacity-40 rounded-lg p-6 backdrop-blur-sm border border-amber-600">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        <button onclick="investigateScene()" class="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-4 py-3 rounded-lg font-medium transition-all">
+                            🔍 调查现场
+                        </button>
+                        <button onclick="questionCharacter()" class="bg-gradient-to-r from-purple-600 to-red-600 hover:from-purple-700 hover:to-red-700 text-white px-4 py-3 rounded-lg font-medium transition-all">
+                            💬 询问角色
+                        </button>
+                        <button onclick="analyzeClue()" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-3 rounded-lg font-medium transition-all">
+                            🧠 分析线索
+                        </button>
+                        <button onclick="makeAccusation()" class="bg-gradient-to-r from-red-700 to-orange-700 hover:from-red-800 hover:to-orange-800 text-white px-4 py-3 rounded-lg font-medium transition-all">
+                            ⚖️ 指控真凶
+                        </button>
+                    </div>
+
+                    <div id="actionArea" class="hidden">
+                        <!-- 动态内容区域 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="space-y-6">
+                <!-- 游戏状态 -->
+                <div class="bg-black bg-opacity-40 rounded-lg p-6 backdrop-blur-sm border border-amber-600">
+                    <h3 class="text-lg font-bold text-amber-100 mb-4">🎯 游戏状态</h3>
+                    <div class="space-y-3 text-amber-200 text-sm">
+                        <div class="flex justify-between">
+                            <span>当前阶段：</span>
+                            <span id="currentPhase">调查中</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>发现线索：</span>
+                            <span id="clueCount">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>询问次数：</span>
+                            <span id="questionCount">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快速操作 -->
+                <div class="bg-black bg-opacity-40 rounded-lg p-6 backdrop-blur-sm border border-amber-600">
+                    <h3 class="text-lg font-bold text-amber-100 mb-4">🚀 快速操作</h3>
+                    <div class="space-y-2">
+                        <button onclick="getGameStatus()" class="w-full bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded text-sm transition-all">
+                            📊 查看状态
+                        </button>
+                        <button onclick="refreshMessages()" class="w-full bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded text-sm transition-all">
+                            🔄 刷新消息
+                        </button>
+                        <button onclick="restartGame()" class="w-full bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded text-sm transition-all">
+                            🔄 重新开始
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 游戏提示 -->
+                <div class="bg-black bg-opacity-40 rounded-lg p-6 backdrop-blur-sm border border-amber-600">
+                    <h3 class="text-lg font-bold text-amber-100 mb-4">💡 游戏提示</h3>
+                    <div class="text-amber-200 text-sm space-y-2">
+                        <p>• 仔细调查每个地点</p>
+                        <p>• 询问所有角色</p>
+                        <p>• 分析发现的线索</p>
+                        <p>• 找出逻辑漏洞</p>
+                        <p>• 最终指控真凶</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 模态对话框 -->
+<div id="actionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-gray-900 rounded-lg p-6 max-w-md w-full mx-4 border border-amber-600">
+        <h3 id="modalTitle" class="text-lg font-bold text-amber-100 mb-4"></h3>
+        <div id="modalContent" class="text-amber-200 mb-4"></div>
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeModal()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">
+                取消
+            </button>
+            <button id="modalConfirm" onclick="executeAction()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded">
+                确认
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentAction = null;
+let sessionId = '{{ session_id }}';
+
+// 调查现场
+function investigateScene() {
+    showModal('🔍 调查现场', `
+        <label class="block text-sm font-medium text-amber-200 mb-2">选择调查地点：</label>
+        <select id="investigateTarget" class="w-full bg-gray-800 text-amber-100 rounded px-3 py-2 border border-amber-600">
+            <option value="现场">案发现场</option>
+            <option value="书房">书房</option>
+            <option value="客厅">客厅</option>
+            <option value="卧室">卧室</option>
+            <option value="厨房">厨房</option>
+            <option value="花园">花园</option>
+            <option value="车库">车库</option>
+            <option value="地下室">地下室</option>
+        </select>
+    `);
+    currentAction = 'investigate';
+}
+
+// 询问角色
+function questionCharacter() {
+    showModal('💬 询问角色', `
+        <label class="block text-sm font-medium text-amber-200 mb-2">选择询问角色：</label>
+        <select id="questionCharacter" class="w-full bg-gray-800 text-amber-100 rounded px-3 py-2 border border-amber-600 mb-3">
+            <option value="">请选择角色...</option>
+        </select>
+        <label class="block text-sm font-medium text-amber-200 mb-2">您的问题：</label>
+        <textarea id="questionText" class="w-full bg-gray-800 text-amber-100 rounded px-3 py-2 border border-amber-600" rows="3" placeholder="输入您要问的问题..."></textarea>
+    `);
+    currentAction = 'question_character';
+    loadCharacters();
+}
+
+// 分析线索
+function analyzeClue() {
+    showModal('🧠 分析线索', `
+        <label class="block text-sm font-medium text-amber-200 mb-2">输入要分析的线索：</label>
+        <textarea id="clueText" class="w-full bg-gray-800 text-amber-100 rounded px-3 py-2 border border-amber-600" rows="3" placeholder="描述您发现的线索..."></textarea>
+    `);
+    currentAction = 'analyze_clue';
+}
+
+// 指控真凶
+function makeAccusation() {
+    showModal('⚖️ 指控真凶', `
+        <label class="block text-sm font-medium text-amber-200 mb-2">指控对象：</label>
+        <select id="accusedCharacter" class="w-full bg-gray-800 text-amber-100 rounded px-3 py-2 border border-amber-600 mb-3">
+            <option value="">请选择角色...</option>
+        </select>
+        <label class="block text-sm font-medium text-amber-200 mb-2">推理过程：</label>
+        <textarea id="reasoningText" class="w-full bg-gray-800 text-amber-100 rounded px-3 py-2 border border-amber-600" rows="4" placeholder="详细说明您的推理过程..."></textarea>
+    `);
+    currentAction = 'make_accusation';
+    loadCharacters();
+}
+
+// 显示模态框
+function showModal(title, content) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalContent').innerHTML = content;
+    document.getElementById('actionModal').classList.remove('hidden');
+}
+
+// 关闭模态框
+function closeModal() {
+    document.getElementById('actionModal').classList.add('hidden');
+    currentAction = null;
+}
+
+// 执行操作
+function executeAction() {
+    if (!currentAction) return;
+
+    let actionData = { type: currentAction };
+
+    switch (currentAction) {
+        case 'investigate':
+            actionData.target = document.getElementById('investigateTarget').value;
+            break;
+        case 'question_character':
+            actionData.character = document.getElementById('questionCharacter').value;
+            actionData.question = document.getElementById('questionText').value;
+            if (!actionData.character || !actionData.question) {
+                alert('请选择角色并输入问题');
+                return;
+            }
+            break;
+        case 'analyze_clue':
+            actionData.clue = document.getElementById('clueText').value;
+            if (!actionData.clue) {
+                alert('请输入要分析的线索');
+                return;
+            }
+            break;
+        case 'make_accusation':
+            actionData.accused = document.getElementById('accusedCharacter').value;
+            actionData.reasoning = document.getElementById('reasoningText').value;
+            if (!actionData.accused || !actionData.reasoning) {
+                alert('请选择角色并输入推理过程');
+                return;
+            }
+            break;
+    }
+
+    // 发送请求
+    fetch('/api/game/script-host/action', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            session_id: sessionId,
+            action: actionData
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeModal();
+            refreshMessages();
+        } else {
+            alert('操作失败：' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('请求失败，请重试');
+    });
+}
+
+// 加载角色列表
+function loadCharacters() {
+    // 这里应该从后端获取角色列表，暂时使用固定数据
+    const characters = ['张三', '李四', '王五', '赵六', '钱七'];
+    const selects = document.querySelectorAll('#questionCharacter, #accusedCharacter');
+    
+    selects.forEach(select => {
+        characters.forEach(char => {
+            if (select && !select.querySelector(`option[value="${char}"]`)) {
+                const option = document.createElement('option');
+                option.value = char;
+                option.textContent = char;
+                select.appendChild(option);
+            }
+        });
+    });
+}
+
+// 获取游戏状态
+function getGameStatus() {
+    fetch('/api/game/script-host/action', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            session_id: sessionId,
+            action: { type: 'get_status' }
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 更新状态显示
+            if (data.discovered_clues_count !== undefined) {
+                document.getElementById('clueCount').textContent = data.discovered_clues_count;
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// 刷新消息
+function refreshMessages() {
+    location.reload();
+}
+
+// 重新开始游戏
+function restartGame() {
+    if (confirm('确定要重新开始游戏吗？当前进度将丢失。')) {
+        window.location.href = '/game/script-host';
+    }
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 定期获取游戏状态
+    setInterval(getGameStatus, 10000);
+    
+    // 滚动到消息底部
+    const messageArea = document.getElementById('messageArea');
+    if (messageArea) {
+        messageArea.scrollTop = messageArea.scrollHeight;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+# 部署命令清单 - yoosuo.asia
+
+## 1. 在Windows PowerShell中上传代码
+scp -r -P 22 "C:\Users\yoosuo\Desktop\111Train_Wps\luoyu2\ai_assistant_platform" ubuntu@36.103.199.61:/home/ubuntu/
+
+## 2. 连接到服务器
+ssh -p 22 ubuntu@36.103.199.61
+
+## 3. 在服务器上执行的命令
+# 移动项目到标准位置
+sudo mv /home/ubuntu/ai_assistant_platform /home/
+sudo chown -R ubuntu:ubuntu /home/ai_assistant_platform
+
+# 进入项目目录
+cd /home/ai_assistant_platform
+
+# 给部署脚本添加执行权限
+chmod +x deploy/deploy.sh deploy/update.sh deploy/backup.sh
+
+# 执行一键部署（替换为你的域名）
+sudo bash deploy/deploy.sh yoosuo.asia
+
+## 4. 部署完成后的检查命令
+# 查看服务状态
+sudo supervisorctl status
+
+# 查看Nginx状态
+sudo systemctl status nginx
+
+# 测试网站是否可访问
+curl -I http://yoosuo.asia
+
+## 5. 配置API密钥
+# 在浏览器中访问：http://yoosuo.asia/config
+# 配置你的AI服务API密钥
+
+## 安全提醒
+# 部署完成后，建议修改服务器密码：
+sudo passwd ubuntu

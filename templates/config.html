@@ -1,0 +1,614 @@
+{% extends "base.html" %}
+
+{% block title %}系统配置 - 智能AI工具平台{% endblock %}
+
+{% block extra_head %}
+<style>
+    .config-card {
+        transition: all 0.3s ease;
+    }
+    
+    .config-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .platform-option {
+        border: 2px solid #e5e7eb;
+        transition: all 0.3s ease;
+    }
+    
+    .platform-option.selected {
+        border-color: #667eea;
+        background-color: #f0f4ff;
+    }
+    
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+    
+    .status-connected {
+        background-color: #10b981;
+    }
+    
+    .status-disconnected {
+        background-color: #ef4444;
+    }
+    
+    .model-option:hover {
+        background-color: #f8fafc;
+    }
+    
+    .api-key-input {
+        font-family: 'Courier New', monospace;
+        letter-spacing: 1px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- 页面标题 -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">系统配置</h1>
+            <p class="text-gray-600">配置AI平台连接，选择模型，管理API密钥</p>
+        </div>
+        
+        <!-- 配置表单 -->
+        <div class="bg-white rounded-xl shadow-lg config-card">
+            <div class="p-6">
+                <!-- 平台选择 -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        AI平台选择
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- 阿里云百炼 -->
+                        <div class="platform-option rounded-lg p-4 cursor-pointer" onclick="selectPlatform('dashscope')">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                                        <span class="text-orange-600 font-bold text-sm">阿</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">阿里云百炼</h3>
+                                        <p class="text-sm text-gray-500">通义千问 + 通义万象</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div id="dashscope-status" class="status-indicator status-disconnected mr-2"></div>
+                                    <input type="radio" name="platform" value="dashscope" class="text-indigo-600 focus:ring-indigo-500">
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-600">
+                                支持对话生成、图像生成、流式响应
+                            </p>
+                        </div>
+                        
+                        <!-- OpenRouter -->
+                        <div class="platform-option rounded-lg p-4 cursor-pointer" onclick="selectPlatform('openrouter')">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                        <span class="text-blue-600 font-bold text-sm">OR</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-gray-900">OpenRouter</h3>
+                                        <p class="text-sm text-gray-500">多模型聚合平台</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <div id="openrouter-status" class="status-indicator status-disconnected mr-2"></div>
+                                    <input type="radio" name="platform" value="openrouter" class="text-indigo-600 focus:ring-indigo-500">
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-600">
+                                支持GPT、Claude、Gemini等多种模型
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- API密钥配置 -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m0 0a2 2 0 012 2m-2-2v6m0 0V9a2 2 0 00-2-2m0 0a2 2 0 00-2-2H9a2 2 0 00-2 2v0M7 7l3 3 3-3M8 21l4-4 4 4"/>
+                        </svg>
+                        API密钥
+                    </h2>
+                    
+                    <!-- 阿里云百炼API Key -->
+                    <div id="dashscope-config" class="config-section mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            阿里云百炼 API Key
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="password" 
+                                   id="dashscope-api-key"
+                                   value="{{ current_config.dashscope_api_key or '' }}"
+                                   placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                   class="api-key-input w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <button type="button" onclick="togglePasswordVisibility('dashscope-api-key')"
+                                    class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <svg class="w-5 h-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            在 <a href="https://dashscope.console.aliyun.com/" target="_blank" class="text-indigo-600 hover:underline">阿里云百炼控制台</a> 获取API Key
+                        </p>
+                    </div>
+                    
+                    <!-- OpenRouter API Key -->
+                    <div id="openrouter-config" class="config-section mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            OpenRouter API Key
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="password" 
+                                   id="openrouter-api-key"
+                                   value="{{ current_config.openrouter_api_key or '' }}"
+                                   placeholder="sk-or-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                                   class="api-key-input w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            <button type="button" onclick="togglePasswordVisibility('openrouter-api-key')"
+                                    class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <svg class="w-5 h-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            在 <a href="https://openrouter.ai/keys" target="_blank" class="text-indigo-600 hover:underline">OpenRouter</a> 获取API Key
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- 模型选择 -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        模型配置
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 文本模型 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">文本模型</label>
+                            <select id="text-model" 
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                <option value="">选择模型...</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">用于对话生成的模型</p>
+                        </div>
+                        
+                        <!-- 图像模型 -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">图像模型</label>
+                            <select id="image-model" 
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                <option value="wan2.2-t2i-flash">通义万象 2.2 Flash</option>
+                                <option value="wan2.2-t2i">通义万象 2.2</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">用于图像生成（仅阿里云百炼）</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 高级设置 -->
+                <div class="mb-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        高级设置
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="enable-memory" checked class="rounded text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2 text-sm text-gray-700">启用用户记忆</span>
+                            </label>
+                        </div>
+                        
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="enable-stream" checked class="rounded text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2 text-sm text-gray-700">默认启用流式响应</span>
+                            </label>
+                        </div>
+                        
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="enable-security" checked class="rounded text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2 text-sm text-gray-700">启用安全防护</span>
+                            </label>
+                        </div>
+                        
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="auto-save" checked class="rounded text-indigo-600 focus:ring-indigo-500">
+                                <span class="ml-2 text-sm text-gray-700">自动保存对话</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="flex justify-between items-center pt-6 border-t">
+                    <div class="flex space-x-3">
+                        <button onclick="testConnection()" 
+                                class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            测试连接
+                        </button>
+                        
+                        <button onclick="loadDefaultConfig()" 
+                                class="text-gray-500 hover:text-gray-700 px-4 py-2 rounded-lg text-sm transition-colors">
+                            恢复默认
+                        </button>
+                    </div>
+                    
+                    <div class="flex space-x-3">
+                        <button onclick="window.location.href='/'" 
+                                class="border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors">
+                            取消
+                        </button>
+                        
+                        <button id="save-config-btn" onclick="saveConfig()" 
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                            保存配置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 配置状态 -->
+        <div class="mt-8 bg-white rounded-xl shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">配置状态</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div id="platform-status-icon" class="w-8 h-8 mx-auto mb-2 rounded-full bg-gray-300"></div>
+                    <p class="text-sm font-medium text-gray-900">当前平台</p>
+                    <p id="platform-status-text" class="text-xs text-gray-500">未配置</p>
+                </div>
+                
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div id="model-status-icon" class="w-8 h-8 mx-auto mb-2 rounded-full bg-gray-300"></div>
+                    <p class="text-sm font-medium text-gray-900">模型状态</p>
+                    <p id="model-status-text" class="text-xs text-gray-500">未选择</p>
+                </div>
+                
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
+                    <div id="connection-status-icon" class="w-8 h-8 mx-auto mb-2 rounded-full bg-gray-300"></div>
+                    <p class="text-sm font-medium text-gray-900">连接状态</p>
+                    <p id="connection-status-text" class="text-xs text-gray-500">未连接</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let currentConfig = {{ current_config | tojson }};
+    let selectedPlatform = currentConfig.current_platform || 'dashscope';
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeConfig();
+        loadModels();
+        updateConfigStatus();
+    });
+    
+    function initializeConfig() {
+        // 设置平台选择
+        selectPlatform(selectedPlatform);
+        
+        // 设置模型选择
+        if (currentConfig.current_model) {
+            document.getElementById('text-model').value = currentConfig.current_model;
+        }
+        
+        if (currentConfig.image_model) {
+            document.getElementById('image-model').value = currentConfig.image_model;
+        }
+        
+        // 更新UI状态
+        updatePlatformVisibility();
+        updateStatusIndicators();
+    }
+    
+    function selectPlatform(platform) {
+        selectedPlatform = platform;
+        
+        // 更新选项样式
+        document.querySelectorAll('.platform-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+        
+        const selectedOption = document.querySelector(`[onclick="selectPlatform('${platform}')"]`);
+        if (selectedOption) {
+            selectedOption.classList.add('selected');
+        }
+        
+        // 更新单选按钮
+        const radio = document.querySelector(`input[value="${platform}"]`);
+        if (radio) {
+            radio.checked = true;
+        }
+        
+        // 更新可见性
+        updatePlatformVisibility();
+        
+        // 加载对应平台的模型
+        loadModels();
+    }
+    
+    function updatePlatformVisibility() {
+        const dashscopeConfig = document.getElementById('dashscope-config');
+        const openrouterConfig = document.getElementById('openrouter-config');
+        
+        if (selectedPlatform === 'dashscope') {
+            dashscopeConfig.style.display = 'block';
+            openrouterConfig.style.display = 'none';
+        } else {
+            dashscopeConfig.style.display = 'none';
+            openrouterConfig.style.display = 'block';
+        }
+        
+        // 更新图像模型显示
+        const imageModelContainer = document.getElementById('image-model').parentElement;
+        imageModelContainer.style.display = selectedPlatform === 'dashscope' ? 'block' : 'none';
+    }
+    
+    async function loadModels() {
+        const textModelSelect = document.getElementById('text-model');
+        textModelSelect.innerHTML = '<option value="">加载中...</option>';
+        
+        try {
+            // 预定义的模型列表，基于实际API测试结果
+            const modelData = {
+                dashscope: {
+                    chat_models: [
+                        {id: "qwen-plus", name: "通义千问Plus", description: "平衡性能与成本的首选模型"},
+                        {id: "qwen-plus-latest", name: "通义千问Plus (最新)", description: "最新版本的Plus模型"},
+                        {id: "qwen-max", name: "通义千问Max", description: "最强大的通用模型"},
+                        {id: "qwen-max-latest", name: "通义千问Max (最新)", description: "最新版本的Max模型"},
+                        {id: "qwen-turbo", name: "通义千问Turbo", description: "快速响应，适合对话场景"},
+                        {id: "qwen-turbo-latest", name: "通义千问Turbo (最新)", description: "最新版本的Turbo模型"},
+                        {id: "qwen-long", name: "通义千问Long", description: "长文本处理专用模型"},
+                        {id: "qwen3-coder-plus", name: "通义千问3代码Plus", description: "代码生成和理解专用"},
+                        {id: "qwen-coder-plus", name: "通义千问代码Plus", description: "编程任务优化模型"},
+                        {id: "qwen-coder-turbo", name: "通义千问代码Turbo", description: "快速代码生成"},
+                        {id: "qwen-math-plus", name: "通义千问数学Plus", description: "数学推理专用模型"},
+                        {id: "qwen-math-turbo", name: "通义千问数学Turbo", description: "数学计算快速响应"},
+                        {id: "qwen2.5-72b-instruct", name: "通义千问2.5-72B", description: "大参数量指令调优模型"},
+                        {id: "qwen2.5-32b-instruct", name: "通义千问2.5-32B", description: "中等参数量指令模型"},
+                        {id: "qwen2.5-14b-instruct", name: "通义千问2.5-14B", description: "轻量级指令模型"},
+                        {id: "qwen2.5-7b-instruct", name: "通义千问2.5-7B", description: "小型高效指令模型"},
+                    ]
+                },
+                openrouter: {
+                    chat_models: [
+                        {id: "openai/gpt-4", name: "GPT-4", description: "OpenAI最强大的模型"},
+                        {id: "openai/gpt-3.5-turbo", name: "GPT-3.5 Turbo", description: "快速且经济的选择"},
+                        {id: "anthropic/claude-3-opus", name: "Claude 3 Opus", description: "Anthropic旗舰模型"},
+                        {id: "anthropic/claude-3-sonnet", name: "Claude 3 Sonnet", description: "平衡性能与成本"},
+                        {id: "google/gemini-pro", name: "Gemini Pro", description: "Google最新AI模型"},
+                    ]
+                }
+            };
+            
+            const models = modelData[selectedPlatform]?.chat_models || [];
+            
+            textModelSelect.innerHTML = '<option value="">选择模型...</option>';
+            
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.id;
+                option.textContent = `${model.name} - ${model.description}`;
+                option.title = model.description;
+                textModelSelect.appendChild(option);
+            });
+            
+            // 设置当前选中的模型
+            if (currentConfig.current_model) {
+                textModelSelect.value = currentConfig.current_model;
+            }
+            
+        } catch (error) {
+            textModelSelect.innerHTML = '<option value="">加载失败</option>';
+            console.error('加载模型失败:', error);
+        }
+    }
+    
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+        input.setAttribute('type', type);
+    }
+    
+    async function testConnection() {
+        const platform = selectedPlatform;
+        const apiKey = document.getElementById(`${platform}-api-key`).value.trim();
+        const model = document.getElementById('text-model').value;
+        
+        if (!apiKey) {
+            showToast('请先输入API密钥', 'warning');
+            return;
+        }
+        
+        if (!model) {
+            showToast('请先选择模型', 'warning');
+            return;
+        }
+        
+        showToast('正在测试连接...', 'info');
+        
+        try {
+            // 创建测试配置
+            const testConfig = {
+                platform: platform,
+                api_key: apiKey,
+                model: model
+            };
+            
+            const result = await apiRequest('/api/config', {
+                method: 'POST',
+                body: JSON.stringify(testConfig)
+            });
+            
+            if (result) {
+                showToast('连接测试成功！', 'success');
+                updateStatusIndicators(true);
+            }
+        } catch (error) {
+            showToast('连接测试失败: ' + error.message, 'error');
+            updateStatusIndicators(false);
+        }
+    }
+    
+    async function saveConfig() {
+        const saveBtn = document.getElementById('save-config-btn');
+        const originalText = saveBtn.textContent;
+        
+        saveBtn.disabled = true;
+        saveBtn.textContent = '保存中...';
+        
+        try {
+            const platform = selectedPlatform;
+            const apiKey = document.getElementById(`${platform}-api-key`).value.trim();
+            const textModel = document.getElementById('text-model').value;
+            const imageModel = document.getElementById('image-model').value;
+            
+            if (!apiKey) {
+                showToast('请输入API密钥', 'warning');
+                return;
+            }
+            
+            if (!textModel) {
+                showToast('请选择文本模型', 'warning');
+                return;
+            }
+            
+            const configData = {
+                platform: platform,
+                api_key: apiKey,
+                model: textModel,
+                image_model: imageModel,
+                dashscope_api_key: platform === 'dashscope' ? apiKey : currentConfig.dashscope_api_key,
+                openrouter_api_key: platform === 'openrouter' ? apiKey : currentConfig.openrouter_api_key
+            };
+            
+            const result = await apiRequest('/api/config', {
+                method: 'POST',
+                body: JSON.stringify(configData)
+            });
+            
+            if (result) {
+                showToast('配置保存成功！', 'success');
+                currentConfig = configData;
+                updateConfigStatus();
+                
+                // 3秒后跳转到首页
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            }
+        } catch (error) {
+            showToast('保存配置失败: ' + error.message, 'error');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = originalText;
+        }
+    }
+    
+    function loadDefaultConfig() {
+        if (confirm('确定要恢复默认配置吗？这将清除所有当前设置。')) {
+            // 清空API密钥
+            document.getElementById('dashscope-api-key').value = '';
+            document.getElementById('openrouter-api-key').value = '';
+            
+            // 重置平台选择
+            selectPlatform('dashscope');
+            
+            // 重置模型选择
+            document.getElementById('text-model').value = '';
+            document.getElementById('image-model').value = 'wan2.2-t2i-flash';
+            
+            // 重置复选框
+            document.getElementById('enable-memory').checked = true;
+            document.getElementById('enable-stream').checked = true;
+            document.getElementById('enable-security').checked = true;
+            document.getElementById('auto-save').checked = true;
+            
+            showToast('已恢复默认配置', 'success');
+        }
+    }
+    
+    function updateStatusIndicators(isConnected = null) {
+        const dashscopeStatus = document.getElementById('dashscope-status');
+        const openrouterStatus = document.getElementById('openrouter-status');
+        
+        // 重置状态
+        dashscopeStatus.className = 'status-indicator status-disconnected';
+        openrouterStatus.className = 'status-indicator status-disconnected';
+        
+        // 根据配置更新状态
+        if (currentConfig.dashscope_api_key && selectedPlatform === 'dashscope') {
+            dashscopeStatus.className = `status-indicator ${isConnected === false ? 'status-disconnected' : 'status-connected'}`;
+        }
+        
+        if (currentConfig.openrouter_api_key && selectedPlatform === 'openrouter') {
+            openrouterStatus.className = `status-indicator ${isConnected === false ? 'status-disconnected' : 'status-connected'}`;
+        }
+    }
+    
+    function updateConfigStatus() {
+        const platformIcon = document.getElementById('platform-status-icon');
+        const platformText = document.getElementById('platform-status-text');
+        const modelIcon = document.getElementById('model-status-icon');
+        const modelText = document.getElementById('model-status-text');
+        const connectionIcon = document.getElementById('connection-status-icon');
+        const connectionText = document.getElementById('connection-status-text');
+        
+        // 平台状态
+        if (currentConfig.current_platform) {
+            platformIcon.className = 'w-8 h-8 mx-auto mb-2 rounded-full bg-indigo-500';
+            platformText.textContent = currentConfig.current_platform === 'dashscope' ? '阿里云百炼' : 'OpenRouter';
+        }
+        
+        // 模型状态
+        if (currentConfig.current_model) {
+            modelIcon.className = 'w-8 h-8 mx-auto mb-2 rounded-full bg-green-500';
+            modelText.textContent = currentConfig.current_model;
+        }
+        
+        // 连接状态
+        const hasApiKey = currentConfig[`${currentConfig.current_platform}_api_key`];
+        if (hasApiKey) {
+            connectionIcon.className = 'w-8 h-8 mx-auto mb-2 rounded-full bg-green-500';
+            connectionText.textContent = '已配置';
+        }
+    }
+</script>
+{% endblock %}
