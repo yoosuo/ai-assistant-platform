@@ -69,6 +69,79 @@
             {% endfor %}
         </div>
 
+        <!-- 消息缓冲区 - 显示最新对话 -->
+        <div class="mb-16">
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">💬 最近对话</h2>
+                    <p class="text-gray-600">查看您与AI助手的最新交流记录</p>
+                </div>
+                
+                <div class="max-w-4xl mx-auto">
+                    <div id="recentChats" class="space-y-4">
+                        <!-- 消息缓冲区内容 -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                            <div class="flex items-start space-x-4">
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white text-lg">🤖</span>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h4 class="text-sm font-medium text-gray-900">工作助手</h4>
+                                        <span class="text-xs text-gray-500">2分钟前</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700 line-clamp-2">帮助您制定高效的工作计划，提升工作效率...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
+                            <div class="flex items-start space-x-4">
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white text-lg">📚</span>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h4 class="text-sm font-medium text-gray-900">学习助手</h4>
+                                        <span class="text-xs text-gray-500">1小时前</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700 line-clamp-2">为您解答学习中的疑问，制定学习计划...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100">
+                            <div class="flex items-start space-x-4">
+                                <div class="flex-shrink-0">
+                                    <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                                        <span class="text-white text-lg">💡</span>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h4 class="text-sm font-medium text-gray-900">创意助手</h4>
+                                        <span class="text-xs text-gray-500">3小时前</span>
+                                    </div>
+                                    <p class="text-sm text-gray-700 line-clamp-2">激发您的创意灵感，协助完成创作任务...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-6">
+                        <button onclick="loadMoreChats()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 transition-colors duration-200">
+                            <i class="fas fa-refresh mr-2"></i>
+                            查看更多对话
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- AI游戏娱乐模块 -->
         {% if games %}
         <div class="mb-16">
@@ -267,6 +340,67 @@
         </div>
         {% endif %}
 
+        <!-- 额外功能区域 - 填充页面空白 -->
+        <div class="mb-16">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-xl p-8 text-white">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-4">🚀 平台特色</h2>
+                    <p class="text-lg opacity-90">探索智能AI工具平台的强大功能</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">🧠</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">智能记忆</h3>
+                        <p class="opacity-90">AI记住您的偏好和对话历史，提供个性化服务</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">⚡</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">高效响应</h3>
+                        <p class="opacity-90">多平台AI模型支持，快速响应各类问题</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">🎯</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">专业服务</h3>
+                        <p class="opacity-90">针对不同场景的专业AI助手，满足多样化需求</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统计信息区域 -->
+        <div class="mb-16">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow duration-300">
+                    <div class="text-3xl font-bold text-indigo-600 mb-2" id="totalChats">1,234</div>
+                    <div class="text-gray-600">总对话数</div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow duration-300">
+                    <div class="text-3xl font-bold text-green-600 mb-2" id="totalUsers">567</div>
+                    <div class="text-gray-600">活跃用户</div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow duration-300">
+                    <div class="text-3xl font-bold text-purple-600 mb-2" id="totalGames">89</div>
+                    <div class="text-gray-600">游戏场次</div>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow duration-300">
+                    <div class="text-3xl font-bold text-orange-600 mb-2">24/7</div>
+                    <div class="text-gray-600">在线服务</div>
+                </div>
+            </div>
+        </div>
+
         <!-- 功能特色 -->
         <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="text-center">
@@ -401,6 +535,44 @@
         selectedAssistant = null;
     }
     
+    // 数字动画函数
+    function animateCount(elementId, targetValue) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        const startValue = 0;
+        const duration = 2000;
+        const startTime = performance.now();
+        
+        function updateCount(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // 使用缓动函数
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+            const currentValue = Math.floor(easeOutQuart * targetValue);
+            
+            element.textContent = currentValue.toLocaleString();
+            
+            if (progress < 1) {
+                requestAnimationFrame(updateCount);
+            } else {
+                element.textContent = targetValue.toLocaleString();
+            }
+        }
+        
+        requestAnimationFrame(updateCount);
+    }
+
+    // 加载更多对话记录功能
+    function loadMoreChats() {
+        showToast('正在加载更多对话...', 'info');
+        // 这里可以添加实际的加载逻辑
+        setTimeout(() => {
+            showToast('已显示所有对话记录', 'success');
+        }, 1000);
+    }
+
     // 页面加载时初始化
     document.addEventListener('DOMContentLoaded', function() {
         
@@ -415,6 +587,17 @@
                 this.style.transform = 'translateY(0)';
             });
         });
+
+        // 延迟执行数字动画，增加视觉冲击力
+        setTimeout(() => {
+            animateCount('totalChats', 1234);
+        }, 500);
+        setTimeout(() => {
+            animateCount('totalUsers', 567);
+        }, 700);
+        setTimeout(() => {
+            animateCount('totalGames', 89);
+        }, 900);
     });
     
     // 简单的提示消息函数

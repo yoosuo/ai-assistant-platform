@@ -51,18 +51,32 @@
                 <!-- 用户操作区域 -->
                 <div class="bg-black bg-opacity-40 rounded-lg p-6 backdrop-blur-sm border border-amber-600">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                        <button onclick="investigateScene()" class="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-4 py-3 rounded-lg font-medium transition-all">
+                        <button onclick="investigateScene()" class="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white px-4 py-3 rounded-lg font-medium transition-all transform hover:scale-105">
                             🔍 调查现场
                         </button>
-                        <button onclick="questionCharacter()" class="bg-gradient-to-r from-purple-600 to-red-600 hover:from-purple-700 hover:to-red-700 text-white px-4 py-3 rounded-lg font-medium transition-all">
+                        <button onclick="questionCharacter()" class="bg-gradient-to-r from-purple-600 to-red-600 hover:from-purple-700 hover:to-red-700 text-white px-4 py-3 rounded-lg font-medium transition-all transform hover:scale-105">
                             💬 询问角色
                         </button>
-                        <button onclick="analyzeClue()" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-3 rounded-lg font-medium transition-all">
+                        <button onclick="analyzeClue()" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-3 rounded-lg font-medium transition-all transform hover:scale-105">
                             🧠 分析线索
                         </button>
-                        <button onclick="makeAccusation()" class="bg-gradient-to-r from-red-700 to-orange-700 hover:from-red-800 hover:to-orange-800 text-white px-4 py-3 rounded-lg font-medium transition-all">
+                        <button onclick="makeAccusation()" class="bg-gradient-to-r from-red-700 to-orange-700 hover:from-red-800 hover:to-orange-800 text-white px-4 py-3 rounded-lg font-medium transition-all transform hover:scale-105">
                             ⚖️ 指控真凶
                         </button>
+                    </div>
+
+                    <!-- 输入区域 -->
+                    <div class="mb-4">
+                        <div class="flex space-x-3">
+                            <textarea id="playerInput" placeholder="输入您的行动或对话..." 
+                                class="flex-1 bg-gray-800 bg-opacity-60 text-amber-100 border border-amber-600 rounded-lg px-4 py-3 placeholder-amber-300 resize-none focus:outline-none focus:border-amber-400 transition-colors"
+                                rows="3"></textarea>
+                            <button onclick="sendPlayerAction()" 
+                                class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-6 py-3 rounded-lg font-medium transition-all transform hover:scale-105 flex items-center">
+                                <span class="mr-2">📝</span>
+                                发送
+                            </button>
+                        </div>
                     </div>
 
                     <div id="actionArea" class="hidden">
