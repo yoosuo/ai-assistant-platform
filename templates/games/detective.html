@@ -22,6 +22,41 @@
     </div>
 
     <div class="max-w-7xl mx-auto p-6">
+        <!-- 案件信息概览 -->
+        {% if game_state and game_state.case_data %}
+        <div class="bg-black bg-opacity-50 rounded-lg p-6 mb-6 backdrop-blur-sm border border-blue-600">
+            <h2 class="text-xl font-bold text-blue-100 mb-4">📋 案件概况</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-blue-200">
+                <div>
+                    <h3 class="font-medium text-blue-100 mb-2">案件概述：</h3>
+                    <p class="text-sm">{{ game_state.case_data.case_overview or '案件信息加载中...' }}</p>
+                </div>
+                <div>
+                    <h3 class="font-medium text-blue-100 mb-2">受害者：</h3>
+                    <p class="text-sm">{{ game_state.case_data.victim.name if game_state.case_data.victim else '信息确认中...' }}</p>
+                </div>
+                <div>
+                    <h3 class="font-medium text-blue-100 mb-2">案发现场：</h3>
+                    <p class="text-sm">{{ game_state.case_data.crime_scene_description or '现场调查中...' }}</p>
+                </div>
+                <div>
+                    <h3 class="font-medium text-blue-100 mb-2">关键证据：</h3>
+                    <div class="text-sm">
+                        {% if game_state.case_data.key_evidence %}
+                            <ul class="list-disc list-inside">
+                                {% for evidence in game_state.case_data.key_evidence[:3] %}
+                                <li>{{ evidence.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>证据收集中...</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <!-- 主要游戏区域 -->
             <div class="lg:col-span-3">
@@ -58,9 +93,15 @@
                                 <label class="block text-sm font-medium text-blue-200 mb-2">选择嫌疑人：</label>
                                 <select id="suspectSelect" class="w-full bg-gray-800 text-blue-100 rounded px-3 py-2 border border-blue-600">
                                     <option value="">选择嫌疑人...</option>
-                                    <option value="李夫人">李夫人</option>
-                                    <option value="张助理">张助理</option>
-                                    <option value="王律师">王律师</option>
+                                    {% if game_state and game_state.case_data and game_state.case_data.suspects %}
+                                        {% for suspect in game_state.case_data.suspects %}
+                                        <option value="{{ suspect.name }}">{{ suspect.name }}</option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <option value="李夫人">李夫人</option>
+                                        <option value="张助理">张助理</option>
+                                        <option value="王律师">王律师</option>
+                                    {% endif %}
                                 </select>
                             </div>
                             <div>
@@ -81,11 +122,17 @@
                                 <label class="block text-sm font-medium text-blue-200 mb-2">选择证据：</label>
                                 <select id="evidenceSelect" class="w-full bg-gray-800 text-blue-100 rounded px-3 py-2 border border-blue-600">
                                     <option value="">选择证据...</option>
-                                    <option value="茶杯">茶杯</option>
-                                    <option value="管家证言">管家证言</option>
-                                    <option value="保险单">保险单</option>
-                                    <option value="手机记录">手机记录</option>
-                                    <option value="财务报表">财务报表</option>
+                                    {% if game_state and game_state.case_data and game_state.case_data.key_evidence %}
+                                        {% for evidence in game_state.case_data.key_evidence %}
+                                        <option value="{{ evidence.name }}">{{ evidence.name }}</option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <option value="茶杯">茶杯</option>
+                                        <option value="管家证言">管家证言</option>
+                                        <option value="保险单">保险单</option>
+                                        <option value="手机记录">手机记录</option>
+                                        <option value="财务报表">财务报表</option>
+                                    {% endif %}
                                 </select>
                             </div>
                             <button onclick="analyzeEvidence()" class="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-all">
@@ -106,9 +153,15 @@
                             <label class="block text-sm font-medium text-blue-200 mb-2">指控嫌疑人：</label>
                             <select id="accusedSelect" class="w-full bg-gray-800 text-blue-100 rounded px-3 py-2 border border-blue-600">
                                 <option value="">选择真凶...</option>
-                                <option value="李夫人">李夫人</option>
-                                <option value="张助理">张助理</option>
-                                <option value="王律师">王律师</option>
+                                {% if game_state and game_state.case_data and game_state.case_data.suspects %}
+                                    {% for suspect in game_state.case_data.suspects %}
+                                    <option value="{{ suspect.name }}">{{ suspect.name }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                    <option value="李夫人">李夫人</option>
+                                    <option value="张助理">张助理</option>
+                                    <option value="王律师">王律师</option>
+                                {% endif %}
                             </select>
                         </div>
                         <div class="md:col-span-1">
@@ -156,21 +209,31 @@
                 <div class="bg-black bg-opacity-50 rounded-lg p-6 backdrop-blur-sm border border-blue-600">
                     <h3 class="text-lg font-bold text-blue-100 mb-4">👥 嫌疑人档案</h3>
                     <div class="space-y-3">
-                        <div class="p-3 bg-gray-800 bg-opacity-60 rounded border border-blue-700">
-                            <div class="font-medium text-blue-100">李夫人 (45岁)</div>
-                            <div class="text-xs text-blue-300">家庭主妇 | 受害者妻子</div>
-                            <div class="text-xs text-blue-400 mt-1">动机：巨额保险金</div>
-                        </div>
-                        <div class="p-3 bg-gray-800 bg-opacity-60 rounded border border-blue-700">
-                            <div class="font-medium text-blue-100">张助理 (28岁)</div>
-                            <div class="text-xs text-blue-300">私人助理 | 工作伙伴</div>
-                            <div class="text-xs text-blue-400 mt-1">动机：内幕交易被发现</div>
-                        </div>
-                        <div class="p-3 bg-gray-800 bg-opacity-60 rounded border border-blue-700">
-                            <div class="font-medium text-blue-100">王律师 (55岁)</div>
-                            <div class="text-xs text-blue-300">律师 | 法律顾问</div>
-                            <div class="text-xs text-blue-400 mt-1">动机：遗嘱修改纠纷</div>
-                        </div>
+                        {% if game_state and game_state.case_data and game_state.case_data.suspects %}
+                            {% for suspect in game_state.case_data.suspects %}
+                            <div class="p-3 bg-gray-800 bg-opacity-60 rounded border border-blue-700">
+                                <div class="font-medium text-blue-100">{{ suspect.name }}</div>
+                                <div class="text-xs text-blue-300">{{ suspect.occupation }} | {{ suspect.basic_info }}</div>
+                                <div class="text-xs text-blue-400 mt-1">动机：{{ suspect.motive }}</div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="p-3 bg-gray-800 bg-opacity-60 rounded border border-blue-700">
+                                <div class="font-medium text-blue-100">李夫人 (45岁)</div>
+                                <div class="text-xs text-blue-300">家庭主妇 | 受害者妻子</div>
+                                <div class="text-xs text-blue-400 mt-1">动机：巨额保险金</div>
+                            </div>
+                            <div class="p-3 bg-gray-800 bg-opacity-60 rounded border border-blue-700">
+                                <div class="font-medium text-blue-100">张助理 (28岁)</div>
+                                <div class="text-xs text-blue-300">私人助理 | 工作伙伴</div>
+                                <div class="text-xs text-blue-400 mt-1">动机：内幕交易被发现</div>
+                            </div>
+                            <div class="p-3 bg-gray-800 bg-opacity-60 rounded border border-blue-700">
+                                <div class="font-medium text-blue-100">王律师 (55岁)</div>
+                                <div class="text-xs text-blue-300">律师 | 法律顾问</div>
+                                <div class="text-xs text-blue-400 mt-1">动机：遗嘱修改纠纷</div>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -245,20 +308,29 @@ function interrogateSuspect() {
             question: question
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('🔍 响应状态:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('🔍 服务器响应:', data);
         if (data.success) {
+            console.log('✅ 审讯成功');
             document.getElementById('questionText').value = '';
             interrogationCount = data.interrogation_count || (interrogationCount + 1);
             updateProgress();
             refreshMessages();
         } else {
+            console.error('❌ 审讯失败:', data.error);
             alert('审讯失败：' + data.error);
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('请求失败，请重试');
+        console.error('💥 请求错误:', error);
+        alert('请求失败，请重试: ' + error.message);
     });
 }
 
@@ -281,19 +353,28 @@ function analyzeEvidence() {
             evidence_name: evidence
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('🔬 证据分析响应状态:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('🔬 证据分析响应:', data);
         if (data.success) {
+            console.log('✅ 证据分析成功');
             clueCount = data.discovered_clues || (clueCount + 1);
             updateProgress();
             refreshMessages();
         } else {
+            console.error('❌ 证据分析失败:', data.error);
             alert('证据分析失败：' + data.error);
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('请求失败，请重试');
+        console.error('💥 证据分析请求错误:', error);
+        alert('请求失败，请重试: ' + error.message);
     });
 }
 
@@ -322,18 +403,27 @@ function submitConclusion() {
             reasoning: reasoning
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('⚖️ 结论提交响应状态:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('⚖️ 结论提交响应:', data);
         if (data.success) {
+            console.log('✅ 结论提交成功');
             showResult(data);
             document.getElementById('caseStatus').textContent = '已结案';
         } else {
+            console.error('❌ 结论提交失败:', data.error);
             alert('提交失败：' + data.error);
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('请求失败，请重试');
+        console.error('💥 结论提交请求错误:', error);
+        alert('请求失败，请重试: ' + error.message);
     });
 }
 
@@ -363,6 +453,13 @@ function showResult(data) {
 function closeResultModal() {
     document.getElementById('resultModal').classList.add('hidden');
     refreshMessages();
+}
+
+// 通用模态框显示函数
+function showModal(title, content) {
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultContent').innerHTML = content;
+    document.getElementById('resultModal').classList.remove('hidden');
 }
 
 // 更新进度
@@ -438,12 +535,145 @@ function displayEvidenceList(evidenceList) {
 
 // 显示案件档案
 function showCaseFile() {
-    alert('案件档案功能开发中...');
+    const gameState = {{ game_state|tojson if game_state else '{}' }};
+    const caseData = gameState.case_data || {};
+    
+    let caseFileHtml = `
+        <div class="space-y-4">
+            <h3 class="text-xl font-bold text-blue-100 mb-4">📋 案件档案</h3>
+            
+            <div class="bg-gray-800 p-4 rounded border border-blue-600">
+                <h4 class="text-blue-300 font-semibold mb-2">案件概况</h4>
+                <p class="text-gray-300 text-sm">${caseData.case_overview || '案件信息加载中...'}</p>
+            </div>
+            
+            <div class="bg-gray-800 p-4 rounded border border-blue-600">
+                <h4 class="text-blue-300 font-semibold mb-2">受害者</h4>
+                <p class="text-gray-300 text-sm">${caseData.victim ? caseData.victim.name : '信息确认中...'}</p>
+            </div>
+            
+            <div class="bg-gray-800 p-4 rounded border border-blue-600">
+                <h4 class="text-blue-300 font-semibold mb-2">案发现场</h4>
+                <p class="text-gray-300 text-sm">${caseData.crime_scene_description || '现场调查中...'}</p>
+            </div>
+            
+            <div class="bg-gray-800 p-4 rounded border border-blue-600">
+                <h4 class="text-blue-300 font-semibold mb-2">嫌疑人列表</h4>
+                <div class="space-y-2">
+    `;
+    
+    if (caseData.suspects && caseData.suspects.length > 0) {
+        caseData.suspects.forEach(suspect => {
+            caseFileHtml += `
+                <div class="text-sm text-gray-300">
+                    <strong>${suspect.name}</strong> - ${suspect.occupation}<br>
+                    <span class="text-xs text-gray-400">动机：${suspect.motive}</span>
+                </div>
+            `;
+        });
+    } else {
+        caseFileHtml += '<p class="text-gray-400 text-sm">嫌疑人信息整理中...</p>';
+    }
+    
+    caseFileHtml += `
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 p-4 rounded border border-blue-600">
+                <h4 class="text-blue-300 font-semibold mb-2">关键证据</h4>
+                <div class="space-y-1">
+    `;
+    
+    if (caseData.key_evidence && caseData.key_evidence.length > 0) {
+        caseData.key_evidence.forEach(evidence => {
+            caseFileHtml += `<div class="text-sm text-gray-300">• ${evidence.name}</div>`;
+        });
+    } else {
+        caseFileHtml += '<p class="text-gray-400 text-sm">证据收集中...</p>';
+    }
+    
+    caseFileHtml += `
+                </div>
+            </div>
+        </div>
+    `;
+    
+    showModal('案件档案', caseFileHtml);
 }
 
 // 刷新消息
 function refreshMessages() {
-    location.reload();
+    console.log('🔄 刷新消息...');
+    
+    fetch(`/api/game/detective/messages?session_id=${sessionId}`)
+        .then(response => {
+            console.log('📥 获取消息响应状态:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📥 获取到的消息:', data);
+            
+            if (data.success && data.messages) {
+                updateMessageArea(data.messages);
+            } else {
+                console.error('❌ 获取消息失败:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('💥 刷新消息错误:', error);
+            // 如果API失败，降级到页面重载
+            location.reload();
+        });
+}
+
+// 更新消息区域
+function updateMessageArea(messages) {
+    const messageArea = document.getElementById('messageArea');
+    
+    if (!messages || messages.length === 0) {
+        messageArea.innerHTML = `
+            <div class="text-center text-blue-300 mt-20">
+                <div class="text-6xl mb-4">🔍</div>
+                <p>案件加载中...</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let messagesHtml = '';
+    messages.forEach(message => {
+        let bgClass = 'bg-slate-800 bg-opacity-60';
+        let alignClass = '';
+        
+        if (message.speaker_type === 'user') {
+            bgClass = 'bg-blue-800 bg-opacity-60';
+            alignClass = 'ml-8';
+        } else if (message.speaker_type === 'system') {
+            bgClass = 'bg-gray-800 bg-opacity-60';
+        } else if (message.speaker_type === 'npc') {
+            bgClass = 'bg-purple-800 bg-opacity-60';
+            alignClass = 'mr-8';
+        }
+        
+        messagesHtml += `
+            <div class="message mb-4 p-3 rounded-lg ${bgClass} ${alignClass}">
+                <div class="flex items-center mb-2">
+                    <span class="font-bold text-blue-100">
+                        ${message.speaker_name || '系统'}
+                    </span>
+                    <span class="text-xs text-blue-300 ml-2">
+                        ${new Date(message.timestamp).toLocaleTimeString()}
+                    </span>
+                </div>
+                <div class="text-blue-50">
+                    ${message.content.replace(/\n/g, '<br>')}
+                </div>
+            </div>
+        `;
+    });
+    
+    messageArea.innerHTML = messagesHtml;
+    messageArea.scrollTop = messageArea.scrollHeight;
 }
 
 // 重新开始案件
@@ -451,6 +681,39 @@ function restartCase() {
     if (confirm('确定要重新开始新的案件吗？当前进度将丢失。')) {
         window.location.href = '/game/detective';
     }
+}
+
+// 自动开始案件
+function autoStartCase() {
+    // 检查是否已有案件数据
+    {% if not game_state or not game_state.case_data or not game_state.case_data.case_overview %}
+    console.log('🚀 自动生成新案件...');
+    fetch('/api/game/detective/start', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            session_id: sessionId,
+            case_type: 'murder'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('✅ 案件生成成功');
+            // 刷新页面以显示新案件
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            console.error('❌ 案件生成失败:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('案件生成错误:', error);
+    });
+    {% endif %}
 }
 
 // 页面加载完成后初始化
@@ -463,6 +726,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初始化进度
     updateProgress();
+    
+    // 如果已有案件数据，刷新消息；否则自动开始案件
+    {% if game_state and game_state.case_data and game_state.case_data.case_overview %}
+    console.log('📋 检测到已有案件数据，刷新消息...');
+    setTimeout(refreshMessages, 500); // 稍微延迟确保页面完全加载
+    {% else %}
+    console.log('🚀 没有案件数据，自动生成新案件...');
+    autoStartCase();
+    {% endif %}
 });
 </script>
 {% endblock %}

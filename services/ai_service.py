@@ -273,7 +273,23 @@ class DashScopeService:
 class AIService:
     """AI服务管理类 - 支持多平台"""
     
-    def __init__(self, api_key: str = "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", platform: str = "openrouter"):
+    def __init__(self, api_key: str = None, platform: str = None):
+        # 如果没有传入参数，从配置文件加载
+        if api_key is None or platform is None:
+            from config import Config
+            config = Config.load_api_config()
+            
+            if platform is None:
+                platform = config.get('current_platform', 'dashscope')
+            
+            if api_key is None:
+                if platform == "dashscope":
+                    api_key = config.get('dashscope_api_key', '')
+                elif platform == "openrouter":
+                    api_key = config.get('openrouter_api_key', '')
+                else:
+                    api_key = ""
+        
         self.platform = platform
         self.api_key = api_key
         
@@ -282,7 +298,7 @@ class AIService:
             self.current_model = 'gemini-flash'  # 默认使用快速模型
         elif platform == "dashscope":
             self.service = DashScopeService(api_key)
-            self.current_model = 'qwen-turbo'  # 默认使用百炼快速模型
+            self.current_model = 'qwen-plus'  # 使用配置中的模型
         else:
             raise ValueError(f"不支持的平台: {platform}")
         

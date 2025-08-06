@@ -83,6 +83,22 @@ class ChatService:
     
     def process_message(self, session_id: str, user_message: str, stream: bool = False) -> Dict:
         """处理用户消息"""
+        # 首先进行防注入检测
+        from services.prompt_guard import check_prompt_injection
+        
+        injection_check = check_prompt_injection(user_message)
+        if injection_check['is_injection']:
+            # 检测到注入攻击，返回安全响应
+            print(f"🛡️ 检测到提示词注入攻击，风险等级: {injection_check['risk_level']}")
+            print(f"🛡️ 匹配模式: {injection_check['matches']}")
+            
+            return {
+                'success': True,
+                'content': injection_check['safe_response'],
+                'injection_detected': True,
+                'risk_level': injection_check['risk_level']
+            }
+        
         # 获取对话信息
         conversation = self.db.get_conversation(session_id)
         if not conversation:
@@ -94,11 +110,14 @@ class ChatService:
         if not assistant_config:
             return {'success': False, 'error': '助手配置不存在'}
         
-        # 保存用户消息
+        # 使用清理后的输入
+        clean_message = injection_check['sanitized_input'] or user_message
+        
+        # 保存用户消息（保存原始消息用于记录）
         self.db.add_message(session_id, 'user', user_message)
         
-        # 构建对话上下文
-        messages = self._build_conversation_context(session_id, assistant_config)
+        # 构建对话上下文（使用清理后的消息）
+        messages = self._build_conversation_context(session_id, assistant_config, clean_message)
         
         # 调用AI生成回复
         if stream:
@@ -106,7 +125,7 @@ class ChatService:
         else:
             return self._process_sync_response(session_id, messages)
     
-    def _build_conversation_context(self, session_id: str, assistant_config: Dict) -> List[Dict]:
+    def _build_conversation_context(self, session_id: str, assistant_config: Dict, current_message: str = None) -> List[Dict]:
         """构建对话上下文"""
         messages = [
             {'role': 'system', 'content': assistant_config['system_prompt']}
@@ -119,6 +138,13 @@ class ChatService:
             messages.append({
                 'role': msg['role'],
                 'content': msg['content']
+            })
+        
+        # 如果有当前消息，添加到上下文中
+        if current_message:
+            messages.append({
+                'role': 'user',
+                'content': current_message
             })
         
         return messages

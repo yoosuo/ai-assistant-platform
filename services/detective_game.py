@@ -174,8 +174,38 @@ class DetectiveGame:
                 print("❌ AI返回空响应")
                 return self._generate_simple_case(case_type)
             
+            # 清理响应内容，移除markdown代码块
+            cleaned_response = response.strip()
+            
+            # 查找JSON开始位置
+            json_start = -1
+            for marker in ['```json\n', '```json', '```\n', '```']:
+                idx = cleaned_response.find(marker)
+                if idx != -1:
+                    json_start = idx + len(marker)
+                    break
+            
+            if json_start == -1:
+                # 没有找到代码块标记，直接查找JSON开始符号
+                json_start = cleaned_response.find('{')
+                if json_start == -1:
+                    raise ValueError("无法找到JSON开始位置")
+            
+            # 查找JSON结束位置
+            json_end = cleaned_response.rfind('```')
+            if json_end == -1 or json_end <= json_start:
+                # 没有找到结束标记，查找最后一个}
+                json_end = cleaned_response.rfind('}') + 1
+                if json_end <= json_start:
+                    raise ValueError("无法找到JSON结束位置")
+            
+            # 提取JSON内容
+            json_content = cleaned_response[json_start:json_end].strip()
+            print(f"🧹 提取的JSON内容: {json_content[:200]}...")
+            
             # 尝试解析JSON
-            case_data = json.loads(response)
+            case_data = json.loads(json_content)
+            print(f"✅ JSON解析成功，案件标题: {case_data.get('案件信息', {}).get('案件标题', 'Unknown')}")
             return case_data
         except json.JSONDecodeError as e:
             print(f"JSON解析失败: {e}")
@@ -197,98 +227,141 @@ class DetectiveGame:
     def _get_fallback_case(self, case_type: str) -> Dict:
         """备用案件数据"""
         return {
-            "title": "豪宅谋杀案",
-            "description": "商业大亨李总在家中被发现死亡，死因为中毒。现场发现多个可疑线索。",
-            "location": "市郊豪宅书房",
-            "time": "昨晚11点左右",
-            "victim": {
-                "name": "李志强",
-                "age": 52,
-                "occupation": "房地产公司董事长"
+            "案件信息": {
+                "案件标题": "豪宅谋杀案",
+                "案件简介": "商业大亨李总在家中被发现死亡，死因为中毒。现场发现多个可疑线索，多名亲近人员都有作案动机和机会。",
+                "案发地点": "市郊豪宅书房",
+                "案发时间": "昨晚11点左右",
+                "受害者信息": {
+                    "姓名": "李志强",
+                    "年龄": "52岁",
+                    "职业": "房地产公司董事长",
+                    "其他信息": "生前身体健康，无疾病史"
+                }
             },
-            "suspects": [
+            "嫌疑人信息": [
                 {
-                    "name": "李夫人",
-                    "age": 45,
-                    "occupation": "家庭主妇",
-                    "relationship": "妻子",
-                    "motive": "巨额保险金",
-                    "alibi": "声称在卧室看电视",
-                    "personality": "表面温和，内心城府很深"
+                    "姓名": "李夫人",
+                    "年龄": 45,
+                    "职业": "家庭主妇",
+                    "与受害者关系": "妻子",
+                    "动机": "巨额保险金和遗产继承",
+                    "不在场证明": "声称在卧室看电视",
+                    "性格特点": "表面温和，内心城府很深"
                 },
                 {
-                    "name": "张助理",
-                    "age": 28,
-                    "occupation": "私人助理",
-                    "relationship": "工作伙伴",
-                    "motive": "公司内幕交易被发现",
-                    "alibi": "声称已回家",
-                    "personality": "紧张焦虑，说话闪烁其词"
+                    "姓名": "张助理",
+                    "年龄": 28,
+                    "职业": "私人助理",
+                    "与受害者关系": "工作伙伴",
+                    "动机": "内幕交易被发现，担心被起诉",
+                    "不在场证明": "声称在公司加班",
+                    "性格特点": "紧张焦虑，说话闪烁其词"
                 },
                 {
-                    "name": "王律师",
-                    "age": 55,
-                    "occupation": "律师",
-                    "relationship": "法律顾问",
-                    "motive": "遗嘱修改纠纷",
-                    "alibi": "在律师楼加班",
-                    "personality": "老谋深算，措辞严谨"
+                    "姓名": "王律师",
+                    "年龄": 55,
+                    "职业": "律师",
+                    "与受害者关系": "法律顾问",
+                    "动机": "遗嘱修改纠纷，经济损失",
+                    "不在场证明": "声称在律师楼加班",
+                    "性格特点": "老谋深算，措辞严谨"
                 }
             ],
-            "evidence": [
+            "证据线索": [
                 {
-                    "type": "physical",
-                    "item": "茶杯",
-                    "description": "书桌上有半杯茶，检测出氰化物残留"
+                    "类型": "物理证据",
+                    "内容": "在书房发现一只红酒杯，杯中残留毒物"
                 },
                 {
-                    "type": "testimony",
-                    "item": "管家证言",
-                    "description": "管家听到书房有争吵声"
+                    "类型": "文件证据",
+                    "内容": "桌上发现一份未签名的遗嘱草稿，内容有重大变更"
                 },
                 {
-                    "type": "financial",
-                    "item": "保险单",
-                    "description": "发现高额人寿保险，受益人为妻子"
+                    "类型": "电子证据",
+                    "内容": "死者手机显示当晚有多通电话记录"
+                },
+                {
+                    "类型": "财务证据",
+                    "内容": "发现一份高额人寿保险合同，受益人为李夫人"
+                },
+                {
+                    "类型": "银行记录",
+                    "内容": "近期有大额现金转账记录，目的地不明"
                 }
             ],
-            "truth": {
-                "killer": "李夫人",
-                "method": "在茶中下毒",
-                "motive": "为了获得保险金和遗产",
-                "process": "趁李总专心工作时在茶中投毒"
+            "真相": {
+                "真正凶手": "李夫人",
+                "作案动机": "为了获得巨额保险金和遗产继承权",
+                "作案过程": "李夫人趁李总在书房工作时，送去一杯红酒。红酒中事先投入了无色无味的剧毒物质，李总饮用后中毒身亡。"
             }
         }
     
     def _create_suspects(self, session_id: str, case_data: Dict):
         """创建嫌疑人角色"""
-        suspects = case_data.get('suspects', [])
+        print(f"🔧 开始创建嫌疑人，案件数据键名: {list(case_data.keys())}")
+        
+        # 处理新的中文数据结构
+        if '嫌疑人信息' in case_data:
+            suspects = case_data.get('嫌疑人信息', [])
+            print(f"🔧 使用中文结构，嫌疑人数量: {len(suspects)}")
+        else:
+            suspects = case_data.get('suspects', [])
+            print(f"🔧 使用英文结构，嫌疑人数量: {len(suspects)}")
         
         for suspect in suspects:
+            print(f"🔧 处理嫌疑人: {suspect}")
+            print(f"🔧 嫌疑人键名: {list(suspect.keys())}")
+            # 支持中文和英文键名
+            name = suspect.get('姓名', suspect.get('name', ''))
+            age = suspect.get('年龄', suspect.get('age', ''))
+            occupation = suspect.get('职业', suspect.get('occupation', ''))
+            relationship = suspect.get('与受害者关系', suspect.get('relationship', ''))
+            motive = suspect.get('动机', suspect.get('motive', ''))
+            alibi = suspect.get('不在场证明', suspect.get('alibi', ''))
+            personality = suspect.get('性格特点', suspect.get('personality', ''))
+            
+            print(f"🔧 创建角色: 姓名={name}, 年龄={age}, 职业={occupation}")
+            
             # 使用AI角色管理器创建角色
             character_id = self.character_manager.create_character(
                 session_id=session_id,
-                name=suspect['name'],
+                name=name,
                 character_type='suspect',
-                personality=suspect.get('personality', ''),
-                background=f"年龄：{suspect['age']}，职业：{suspect['occupation']}，关系：{suspect['relationship']}",
-                secrets=f"动机：{suspect['motive']}，不在场证明：{suspect['alibi']}"
+                personality=personality,
+                background=f"年龄：{age}，职业：{occupation}，关系：{relationship}",
+                secrets=f"动机：{motive}，不在场证明：{alibi}"
             )
             
+            print(f"🔧 角色创建成功: {name} -> {character_id}")
+            
             # 保存角色ID映射，方便后续查找
-            self.db.set_game_state(session_id, f'suspect_{suspect["name"]}_id', character_id)
+            self.db.set_game_state(session_id, f'suspect_{name}_id', character_id)
+            print(f"🔧 保存角色映射: suspect_{name}_id -> {character_id}")
     
     def _initialize_evidence(self, session_id: str, case_data: Dict):
         """初始化证据"""
-        evidence_list = case_data.get('evidence', [])
+        # 处理新的中文数据结构
+        if '证据线索' in case_data:
+            evidence_list = case_data.get('证据线索', [])
+        else:
+            evidence_list = case_data.get('evidence', [])
         
         discovered_evidence = []
         for evidence in evidence_list:
+            # 支持中文和英文键名
+            evidence_type = evidence.get('类型', evidence.get('type', ''))
+            evidence_content = evidence.get('内容', evidence.get('item', ''))
+            evidence_desc = evidence.get('内容', evidence.get('description', ''))
+            
+            # 使用与key_evidence相同的命名格式
+            evidence_name = evidence_type + ' - ' + evidence_content[:20] + "..."
+            
             discovered_evidence.append({
                 'id': str(uuid.uuid4()),
-                'type': evidence['type'],
-                'name': evidence['item'],
-                'description': evidence['description'],
+                'type': evidence_type,
+                'name': evidence_name,
+                'description': evidence_desc,
                 'discovered': False,
                 'analyzed': False
             })
@@ -299,18 +372,41 @@ class DetectiveGame:
     
     def _send_case_intro(self, session_id: str, case_data: Dict):
         """发送案件介绍"""
+        # 处理新的中文数据结构
+        if '案件信息' in case_data:
+            case_info = case_data.get('案件信息', {})
+            victim_info = case_info.get('受害者信息', {})
+            
+            case_title = case_info.get('案件标题', '')
+            case_location = case_info.get('案发地点', '')
+            case_time = case_info.get('案发时间', '')
+            case_description = case_info.get('案件简介', '')
+            victim_name = victim_info.get('姓名', '')
+            victim_age = victim_info.get('年龄', '')
+            victim_occupation = victim_info.get('职业', '')
+        else:
+            # 备用英文结构
+            case_title = case_data.get('title', '')
+            case_location = case_data.get('location', '')
+            case_time = case_data.get('time', '')
+            case_description = case_data.get('description', '')
+            victim_info = case_data.get('victim', {})
+            victim_name = victim_info.get('name', '')
+            victim_age = victim_info.get('age', '')
+            victim_occupation = victim_info.get('occupation', '')
+        
         intro_message = f"""
 🔍 **案件档案**
 
-**案件：** {case_data['title']}
-**地点：** {case_data['location']}
-**时间：** {case_data['time']}
+**案件：** {case_title}
+**地点：** {case_location}
+**时间：** {case_time}
 
 **案情简介：**
-{case_data['description']}
+{case_description}
 
-**受害者：** {case_data['victim']['name']}（{case_data['victim']['age']}岁）
-**职业：** {case_data['victim']['occupation']}
+**受害者：** {victim_name}（{victim_age}岁）
+**职业：** {victim_occupation}
 
 ---
 
@@ -329,11 +425,104 @@ class DetectiveGame:
     
     def load_game_state(self, session_id: str) -> Optional[Dict]:
         """加载游戏状态"""
-        return self.db.get_game_session(session_id)
+        try:
+            # 获取基础游戏会话信息
+            game_session = self.db.get_game_session(session_id)
+            if not game_session:
+                return None
+            
+            # 获取案件数据
+            case_data_str = self.db.get_game_state_value(session_id, 'case_data')
+            case_data = {}
+            if case_data_str:
+                try:
+                    case_data = json.loads(case_data_str)
+                    print(f"📂 从数据库加载的案件数据: {json.dumps(case_data, ensure_ascii=False)[:300]}...")
+                except json.JSONDecodeError:
+                    print(f"案件数据解析失败: {case_data_str[:100]}...")
+            
+            # 处理AI生成的中文键名数据结构
+            suspects = []
+            key_evidence = []
+            case_overview = ""
+            victim_name = ""
+            crime_scene_description = ""
+            
+            # 检查是否是AI生成的中文结构
+            if '案件信息' in case_data:
+                # AI生成的中文结构
+                case_info = case_data.get('案件信息', {})
+                suspects_info = case_data.get('嫌疑人信息', [])
+                evidence_info = case_data.get('证据线索', [])
+                
+                case_overview = case_info.get('案件标题', '') + ' - ' + case_info.get('案件简介', '')
+                victim_info = case_info.get('受害者信息', {})
+                if isinstance(victim_info, dict):
+                    victim_name = victim_info.get('公司名称', '') or victim_info.get('姓名', '')
+                else:
+                    victim_name = str(victim_info)
+                crime_scene_description = case_info.get('案发地点', '') + '，' + case_info.get('案发时间', '')
+                
+                # 转换嫌疑人信息
+                for suspect in suspects_info:
+                    suspects.append({
+                        'name': suspect.get('姓名', ''),
+                        'occupation': suspect.get('职业', ''),
+                        'motive': suspect.get('动机', ''),
+                        'basic_info': f"{suspect.get('年龄', '')}岁，{suspect.get('职业', '')}，{suspect.get('与受害者关系', '')}"
+                    })
+                
+                # 转换证据信息
+                for evidence in evidence_info:
+                    key_evidence.append({
+                        'name': evidence.get('类型', '') + ' - ' + evidence.get('内容', '')[:20] + "...",
+                        'description': evidence.get('内容', '')
+                    })
+            else:
+                # 备用数据结构
+                case_overview = case_data.get('title', '') + ' - ' + case_data.get('summary', '')
+                victim_name = case_data.get('victim', {}).get('name', '') if isinstance(case_data.get('victim'), dict) else case_data.get('victim', '')
+                crime_scene_description = case_data.get('scene', '')
+                
+                # 获取游戏角色中的嫌疑人数据
+                characters = self.db.get_game_characters(session_id)
+                for char in characters:
+                    if char.get('character_type') == 'suspect':
+                        suspects.append({
+                            'name': char.get('character_name', ''),
+                            'occupation': char.get('background', '').split(',')[0] if char.get('background') else '',
+                            'motive': char.get('personality', ''),
+                            'basic_info': char.get('background', '')
+                        })
+                
+                key_evidence = [{'name': ev, 'description': ev} for ev in case_data.get('initial_evidence', [])]
+            
+            # 构建完整的游戏状态
+            game_state = {
+                'session_id': session_id,
+                'phase': 'investigation',
+                'case_type': game_session.get('game_type', 'detective'),
+                'case_data': {
+                    'case_overview': case_overview,
+                    'victim': {
+                        'name': victim_name
+                    },
+                    'crime_scene_description': crime_scene_description,
+                    'suspects': suspects,
+                    'key_evidence': key_evidence
+                }
+            }
+            
+            print(f"🔍 组装的游戏状态: {json.dumps(game_state, ensure_ascii=False)[:200]}...")
+            return game_state
+            
+        except Exception as e:
+            print(f"加载游戏状态失败: {e}")
+            return None
     
     def get_game_messages(self, session_id: str, limit: int = 20) -> List[Dict]:
         """获取游戏消息"""
-        return self.db.get_game_messages(session_id, limit)
+        return self.db.get_game_messages(session_id, phase=None, limit=limit)
     
     def start_case(self, session_id: str, case_type: str = 'murder') -> Dict:
         """开始新案件"""
@@ -355,41 +544,52 @@ class DetectiveGame:
     def interrogate_suspect(self, session_id: str, suspect_name: str, question: str) -> Dict:
         """审讯嫌疑人"""
         try:
+            print(f"🔍 开始审讯嫌疑人: {suspect_name}, 问题: {question}")
+            
             # 获取嫌疑人角色ID
             character_id = self.db.get_game_state_value(session_id, f'suspect_{suspect_name}_id')
+            print(f"🔍 从数据库获取角色ID: {character_id}")
             
             # 如果找不到，尝试查找所有角色ID进行模糊匹配
             if not character_id:
                 print(f"🔍 尝试模糊匹配嫌疑人: {suspect_name}")
                 # 获取所有嫌疑人角色
                 all_characters = self.character_manager.get_all_characters(session_id)
+                print(f"🔍 所有角色数量: {len(all_characters)}")
                 for character in all_characters:
+                    print(f"🔍 检查角色: {character.name}, 类型: {character.character_type}")
                     if character.character_type == 'suspect' and suspect_name in character.name:
-                        character_id = character.id
+                        character_id = character.character_id
                         print(f"✅ 找到匹配的嫌疑人: {character.name} -> {character_id}")
                         break
                 
                 if not character_id:
                     available_suspects = [char.name for char in all_characters if char.character_type == 'suspect']
+                    print(f"❌ 没有找到嫌疑人, 可用嫌疑人: {available_suspects}")
                     return {
                         'success': False,
                         'error': f'找不到嫌疑人：{suspect_name}。可用嫌疑人：{", ".join(available_suspects)}'
                     }
             
             # 获取嫌疑人信息
+            print(f"🔍 获取角色信息: session_id={session_id}, character_id={character_id}")
             character = self.character_manager.get_character(session_id, character_id)
+            print(f"🔍 获取到的角色: {character}")
             
             if not character:
+                print(f"❌ 角色不存在: {character_id}")
                 return {
                     'success': False,
                     'error': f'找不到嫌疑人：{suspect_name}'
                 }
             
+            print(f"✅ 角色信息: 姓名={character.name}, 背景={character.background[:50]}...")
+            
             # 构造审讯提示词
             prompt = f"""
-            你现在扮演嫌疑人{suspect_name}，背景：{character.get('background', '')}
-            性格：{character.get('personality', '')}
-            秘密信息：{character.get('secrets', '')}
+            你现在扮演嫌疑人{suspect_name}，背景：{character.background}
+            性格：{character.personality}
+            秘密信息：{character.secrets}
             
             侦探问你：{question}
             
@@ -403,9 +603,21 @@ class DetectiveGame:
             """
             
             # AI生成回答
-            answer = self.ai_service.chat(
+            print(f"🤖 调用AI生成回答...")
+            ai_response = self.ai_service.chat(
                 messages=[{"role": "user", "content": prompt}]
-            )['content']
+            )
+            print(f"🤖 AI响应: {ai_response}")
+            
+            if not ai_response.get('success', False):
+                print(f"❌ AI调用失败: {ai_response.get('error', '未知错误')}")
+                return {
+                    'success': False,
+                    'error': f'AI回应生成失败：{ai_response.get("error", "未知错误")}'
+                }
+            
+            answer = ai_response.get('content', '对不起，我现在无法回答这个问题。')
+            print(f"🤖 AI生成的回答: {answer[:100]}...")
             
             # 记录对话
             self.db.add_game_message(session_id, 'user', '🕵️ 侦探', 'user', f"审讯{suspect_name}：{question}")
@@ -427,6 +639,9 @@ class DetectiveGame:
             }
             
         except Exception as e:
+            print(f"💥 审讯过程中发生异常: {e}")
+            import traceback
+            traceback.print_exc()
             return {
                 'success': False,
                 'error': f'审讯失败：{str(e)}'
@@ -445,22 +660,39 @@ class DetectiveGame:
             
             evidence_list = json.loads(evidence_list_str)
             
-            # 查找指定证据
+            # 查找指定证据 - 支持模糊匹配
+            print(f"🔍 寻找证据: {evidence_name}")
+            print(f"🔍 可用证据列表: {[e['name'] for e in evidence_list]}")
+            
             target_evidence = None
             for evidence in evidence_list:
+                # 精确匹配
                 if evidence['name'] == evidence_name:
+                    target_evidence = evidence
+                    break
+                # 模糊匹配：如果存储的名称是描述的前缀
+                elif evidence_name.startswith(evidence['name'].replace('...', '')):
+                    target_evidence = evidence
+                    break
+                # 反向模糊匹配：如果传入的名称包含存储的名称（去掉省略号）
+                elif evidence['name'].replace('...', '') in evidence_name:
                     target_evidence = evidence
                     break
             
             if not target_evidence:
+                available_names = [e['name'] for e in evidence_list]
                 return {
                     'success': False,
-                    'error': f'没有找到证据：{evidence_name}'
+                    'error': f'没有找到证据：{evidence_name}。可用证据：{", ".join(available_names)}'
                 }
+            
+            print(f"✅ 找到匹配证据: {target_evidence['name']}")
             
             # 标记为已发现和已分析
             target_evidence['discovered'] = True
             target_evidence['analyzed'] = True
+            
+            print(f"🔬 开始生成证据分析...")
             
             # 生成分析结果
             analysis_prompt = f"""
@@ -495,7 +727,9 @@ class DetectiveGame:
             【建议】继续收集更多证据，进行交叉验证分析。
             """
             
+            print(f"🤖 准备调用AI分析证据...")
             analysis_result = self._safe_ai_call(analysis_prompt, fallback_analysis)
+            print(f"🤖 AI分析完成: {analysis_result[:100]}...")
             
             # 保存更新的证据列表
             self.db.set_game_state(session_id, 'evidence_list', json.dumps(evidence_list))
@@ -508,14 +742,20 @@ class DetectiveGame:
             self.db.add_game_message(session_id, 'user', '🕵️ 侦探', 'user', f"分析证据：{evidence_name}")
             self.db.add_game_message(session_id, 'system', '🔬 法医分析', 'system', analysis_result)
             
-            return {
+            result = {
                 'success': True,
                 'evidence_name': evidence_name,
                 'analysis': analysis_result,
                 'discovered_clues': discovered_count
             }
             
+            print(f"✅ 证据分析成功完成，返回结果: {result}")
+            return result
+            
         except Exception as e:
+            import traceback
+            print(f"💥 证据分析异常: {str(e)}")
+            print(f"💥 异常堆栈: {traceback.format_exc()}")
             return {
                 'success': False,
                 'error': f'证据分析失败：{str(e)}'

@@ -600,6 +600,46 @@
     }
 }
 
+/* 新增转圈圈样式 */
+.typing-avatar {
+    font-size: 24px;
+    margin-right: 8px;
+}
+
+.typing-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.typing-text {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: #666;
+}
+
+.spinner-circle {
+    width: 20px;
+    height: 20px;
+    position: relative;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 .welcome-message {
     text-align: center;
     padding: 60px 40px;
@@ -736,6 +776,49 @@
     font-size: 16px;
 }
 
+/* 退出登录按钮样式 */
+.logout-btn {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3);
+    position: relative;
+    overflow: hidden;
+    margin-right: 12px;
+}
+
+.logout-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.logout-btn:hover::before {
+    left: 100%;
+}
+
+.logout-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+}
+
+.logout-btn i {
+    font-size: 16px;
+}
+
 /* 加载状态优化 */
 .loading {
     opacity: 0.6;
@@ -808,6 +891,10 @@
                 <button class="home-btn" onclick="goToHome()" title="返回主页">
                     <i class="fas fa-home"></i>
                 </button>
+                <!-- 退出登录按钮 -->
+                <button class="logout-btn" onclick="logout()" title="退出登录">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
                 <div class="assistant-avatar">{{ assistant_config.icon }}</div>
                 <div class="assistant-details">
                     <h3>{{ assistant_config.name }}</h3>
@@ -875,12 +962,20 @@
             
             <!-- 打字指示器 -->
             <div class="typing-indicator" id="typingIndicator">
-                <div class="typing-dots">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
+                <div class="typing-avatar">🤖</div>
+                <div class="typing-content">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    <div class="typing-text">
+                        <span id="typingText">AI正在思考中...</span>
+                        <div class="spinner-circle">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
                 </div>
-                <span>AI正在思考中...</span>
             </div>
         </div>
         
@@ -944,6 +1039,7 @@ function formatHistoryMessages() {
 // 创建新会话
 async function createNewChat() {
     try {
+        console.log('🔧 创建新会话，助手类型:', assistantType);
         const response = await fetch('/api/conversations/create', {
             method: 'POST',
             headers: {
@@ -954,7 +1050,10 @@ async function createNewChat() {
             })
         });
         
+        console.log('📡 创建会话响应状态:', response.status);
         const result = await response.json();
+        console.log('📝 创建会话响应内容:', result);
+        
         if (result.success) {
             currentSessionId = result.session_id;
             history.pushState(null, '', result.redirect_url);
@@ -962,9 +1061,11 @@ async function createNewChat() {
             loadConversations();
             showToast('新会话已创建 🎉', 'success');
         } else {
+            console.log('❌ 创建会话失败:', result.error);
             showToast('创建会话失败: ' + result.error, 'error');
         }
     } catch (error) {
+        console.log('❌ 创建会话异常:', error);
         showToast('创建会话失败: ' + error.message, 'error');
     }
 }
@@ -1068,11 +1169,20 @@ async function sendMessage() {
     const input = document.getElementById('messageInput');
     const message = input.value.trim();
     
+    console.log('🚀 发送消息:', message);
+    console.log('🔧 助手类型:', assistantType);
+    console.log('🔧 会话ID:', currentSessionId);
+    
     if (!message || isLoading) return;
     
     if (!currentSessionId) {
+        console.log('📝 需要创建新会话...');
         await createNewChat();
-        if (!currentSessionId) return;
+        if (!currentSessionId) {
+            console.log('❌ 创建会话失败');
+            return;
+        }
+        console.log('✅ 新会话创建成功:', currentSessionId);
     }
     
     // 添加用户消息到界面
@@ -1087,26 +1197,38 @@ async function sendMessage() {
     setLoading(true);
     
     try {
+        console.log('📡 准备发送API请求...');
+        const requestData = {
+            session_id: currentSessionId,
+            message: message,
+            assistant_type: assistantType
+        };
+        console.log('📝 请求数据:', requestData);
+        
         const response = await fetch('/api/assistant/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                session_id: currentSessionId,
-                message: message,
-                assistant_type: assistantType
-            })
+            body: JSON.stringify(requestData)
         });
         
+        console.log('📡 API响应状态:', response.status);
         const result = await response.json();
+        console.log('📝 API响应内容:', result);
+        
+        if (!response.ok) {
+            console.log('❌ HTTP错误:', response.status, response.statusText);
+        }
         
         if (result.success) {
             addMessage('assistant', result.content || result.response || '回复内容为空');
         } else {
+            console.log('❌ API返回错误:', result.error);
             addMessage('assistant', '抱歉，发生了错误：' + result.error);
         }
     } catch (error) {
+        console.log('❌ 请求异常:', error);
         addMessage('assistant', '抱歉，发生了错误：' + error.message);
     } finally {
         hideTypingIndicator();
@@ -1163,13 +1285,54 @@ function clearMessages() {
 
 // 显示打字指示器
 function showTypingIndicator() {
-    document.getElementById('typingIndicator').style.display = 'flex';
-    scrollToBottom();
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) {
+        indicator.style.display = 'flex';
+        
+        // 动态变化的提示文字
+        const texts = [
+            'AI正在思考中...',
+            '正在分析您的问题...',
+            '正在生成回复...',
+            '马上就好...'
+        ];
+        
+        let currentIndex = 0;
+        const textElement = document.getElementById('typingText');
+        
+        // 立即显示第一个文本
+        if (textElement) {
+            textElement.textContent = texts[0];
+        }
+        
+        // 每2秒切换文本
+        window.typingTextInterval = setInterval(() => {
+            currentIndex = (currentIndex + 1) % texts.length;
+            if (textElement) {
+                textElement.textContent = texts[currentIndex];
+            }
+        }, 2000);
+        
+        scrollToBottom();
+    } else {
+        console.log('⚠️ 找不到打字指示器元素');
+    }
 }
 
 // 隐藏打字指示器
 function hideTypingIndicator() {
-    document.getElementById('typingIndicator').style.display = 'none';
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) {
+        indicator.style.display = 'none';
+        
+        // 清除文字切换定时器
+        if (window.typingTextInterval) {
+            clearInterval(window.typingTextInterval);
+            window.typingTextInterval = null;
+        }
+    } else {
+        console.log('⚠️ 找不到打字指示器元素');
+    }
 }
 
 // 设置加载状态
@@ -1178,13 +1341,21 @@ function setLoading(loading) {
     const sendBtn = document.getElementById('sendBtn');
     const input = document.getElementById('messageInput');
     
-    sendBtn.disabled = loading;
-    input.disabled = loading;
-    
-    if (loading) {
-        sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    if (sendBtn) {
+        sendBtn.disabled = loading;
+        if (loading) {
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        } else {
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        }
     } else {
-        sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        console.log('⚠️ 找不到发送按钮元素');
+    }
+    
+    if (input) {
+        input.disabled = loading;
+    } else {
+        console.log('⚠️ 找不到输入框元素');
     }
 }
 
@@ -1292,6 +1463,34 @@ function formatMessageContent(content) {
     }
     
     return formatted;
+}
+
+// 退出登录函数
+async function logout() {
+    if (confirm('确定要退出登录吗？')) {
+        try {
+            const response = await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast('退出成功！正在跳转...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1000);
+            } else {
+                showToast('退出失败：' + result.error, 'error');
+            }
+        } catch (error) {
+            console.error('退出失败:', error);
+            showToast('退出失败，请重试', 'error');
+        }
+    }
 }
 
 // 显示提示消息

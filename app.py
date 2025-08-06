@@ -21,7 +21,7 @@ from services.prompt_guard import PromptGuard
 from services.user_service import UserService
 from prompts.assistant_prompts import get_assistant_prompt, get_all_assistants
 from prompts.game_prompts import get_game_prompt, get_all_games
-from services.detective_game_v2 import DetectiveGameV2
+
 
 def create_app(config_name=None):
     """创建Flask应用"""
@@ -39,6 +39,18 @@ def create_app(config_name=None):
     prompt_guard = PromptGuard()
     auth_manager = AuthManager(app.config['DATABASE_PATH'])
     user_service = UserService(app.config['DATABASE_PATH'])
+    
+    # 初始化游戏服务
+    from services.chat_service import ChatService
+    from services.script_host_game import ScriptHostGame
+    from services.detective_game import DetectiveGame
+    from services.werewolf_game import WerewolfGame
+    
+    chat_service = ChatService()
+    script_game = ScriptHostGame()
+    detective_game = DetectiveGame()
+
+    werewolf_game = WerewolfGame()
     
     # ==================== 认证路由 ====================
     
@@ -534,17 +546,6 @@ def create_app(config_name=None):
     
     # ==================== 新增功能路由 ====================
     
-    # 导入新服务
-    from services.chat_service import ChatService
-    from services.script_host_game import ScriptHostGame
-    from services.detective_game import DetectiveGame
-    from services.werewolf_game import WerewolfGame
-    
-    chat_service = ChatService()
-    script_game = ScriptHostGame()
-    detective_game = DetectiveGame()
-    werewolf_game = WerewolfGame()
-    
     # ===== AI助手对话路由 =====
     @app.route('/assistant/<assistant_type>')
     @require_auth
@@ -759,6 +760,40 @@ def create_app(config_name=None):
         except Exception as e:
             return jsonify({"success": False, "error": str(e)})
     
+    @app.route('/api/game/detective/evidence', methods=['GET'])
+    @require_auth
+    def api_detective_evidence_list():
+        """获取证据列表"""
+        try:
+            session_id = request.args.get('session_id')
+            
+            if not session_id:
+                return jsonify({"success": False, "error": "缺少session_id参数"})
+            
+            result = detective_game.get_evidence_list(session_id)
+            return jsonify(result)
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)})
+    
+    @app.route('/api/game/detective/messages', methods=['GET'])
+    @require_auth
+    def api_detective_messages():
+        """获取游戏消息"""
+        try:
+            session_id = request.args.get('session_id')
+            limit = request.args.get('limit', 20)
+            
+            if not session_id:
+                return jsonify({"success": False, "error": "缺少session_id参数"})
+            
+            messages = detective_game.get_game_messages(session_id, limit=int(limit))
+            return jsonify({
+                "success": True,
+                "messages": messages
+            })
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)})
+    
     @app.route('/api/game/detective/conclude', methods=['POST'])
     @require_auth
     def api_detective_conclude():
@@ -932,75 +967,7 @@ def create_app(config_name=None):
         except Exception as e:
             return jsonify({"success": False, "error": str(e)})
     
-    # 新版AI推理侦探游戏页面
-    @app.route('/game/detective-v2')
-    @require_auth
-    def detective_game_v2_page():
-        session_id = request.args.get('session_id')
-        if not session_id:
-            session_id = detective_game_v2.create_new_game(user_id=session.get('user_id', 1))
-            return redirect(url_for('detective_game_v2_page', session_id=session_id))
-        game_state = detective_game_v2.load_game_state(session_id)
-        messages = detective_game_v2.get_game_messages(session_id, limit=30)
-        return render_template('games/detective_v2.html', session_id=session_id, game_state=game_state, messages=messages)
 
-    # 案件生成API
-    @app.route('/api/game/detective-v2/start', methods=['POST'])
-    @require_auth
-    def api_detective_v2_start():
-        data = request.get_json()
-        session_id = data.get('session_id')
-        case_type = data.get('case_type', 'murder')
-        result = detective_game_v2.start_case(session_id, case_type)
-        return jsonify(result)
-
-    # 审讯嫌疑人API
-    @app.route('/api/game/detective-v2/interrogate', methods=['POST'])
-    @require_auth
-    def api_detective_v2_interrogate():
-        data = request.get_json()
-        session_id = data.get('session_id')
-        suspect_name = data.get('suspect_name')
-        question = data.get('question')
-        result = detective_game_v2.interrogate_suspect(session_id, suspect_name, question)
-        return jsonify(result)
-
-    # 证据分析API
-    @app.route('/api/game/detective-v2/analyze', methods=['POST'])
-    @require_auth
-    def api_detective_v2_analyze():
-        data = request.get_json()
-        session_id = data.get('session_id')
-        evidence_name = data.get('evidence_name')
-        result = detective_game_v2.analyze_evidence(session_id, evidence_name)
-        return jsonify(result)
-
-    # 推理结论评分API
-    @app.route('/api/game/detective-v2/conclude', methods=['POST'])
-    @require_auth
-    def api_detective_v2_conclude():
-        data = request.get_json()
-        session_id = data.get('session_id')
-        suspect = data.get('suspect')
-        reasoning = data.get('reasoning')
-        result = detective_game_v2.submit_conclusion(session_id, suspect, reasoning)
-        return jsonify(result)
-
-    # 推理笔记API
-    @app.route('/api/game/detective-v2/notebook', methods=['GET'])
-    @require_auth
-    def api_detective_v2_notebook():
-        session_id = request.args.get('session_id')
-        result = detective_game_v2.get_notebook(session_id)
-        return jsonify(result)
-
-    # 获取提示API
-    @app.route('/api/game/detective-v2/hint', methods=['GET'])
-    @require_auth
-    def api_detective_v2_hint():
-        session_id = request.args.get('session_id')
-        result = detective_game_v2.get_hint(session_id)
-        return jsonify(result)
     
     return app
 

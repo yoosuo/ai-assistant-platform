@@ -7,6 +7,7 @@
 
 import os
 import sys
+
 from app import create_app
 from config import Config
 
